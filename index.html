@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f4f2ec">
+	<title>UniFit | Beyond rankings. Toward the right fit</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+		:root {
+			--paper: #f4f2ec;
+			--surface: #fffefa;
+			--ink: #202622;
+			--muted: #68716b;
+			--rule: #d9d9d0;
+			--blue: #2767c7;
+			--blue-soft: #dce9fa;
+			--coral: #d96b52;
+			--coral-soft: #f5ded6;
+			--green: #4b8565;
+			--green-soft: #dce9df;
+			--yellow: #f0c94d;
+			--mono: 'DM Mono', 'Courier New', monospace;
+			--sans: 'DM Sans', sans-serif;
+			--display: 'Manrope', sans-serif;
+		}
+		* { box-sizing: border-box; }
+		body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+		button, select { font: inherit; color: inherit; }
+		.masthead { max-width: 1440px; margin: auto; padding: 20px 36px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--rule); }
+		.brand { display: flex; align-items: center; gap: 12px; font: 800 17px var(--display); letter-spacing: 0; }
+		.brand-mark { width: 31px; height: 31px; background: var(--blue); color: white; display: grid; place-items: center; font: 700 15px var(--mono); border-radius: 2px; }
+		.brand-tagline { color: var(--muted); font: 11px var(--sans); font-weight: 400; }
+		.mast-meta { display: flex; align-items: center; gap: 20px; color: var(--muted); font: 11px var(--mono); text-transform: uppercase; }
+		.data-state { display: flex; align-items: center; gap: 7px; }
+		.data-state::before { content: ''; display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+		.data-state.ready::before { background: var(--green); }
+		main { max-width: 1440px; margin: 0 auto; padding: 36px; }
+		.intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(210px, 310px); gap: 32px; align-items: end; margin: 4px 0 30px; }
+		.eyebrow { margin: 0 0 10px; color: var(--blue); font: 500 11px var(--mono); letter-spacing: 0; text-transform: uppercase; }
+		h1 { max-width: 780px; margin: 0; font: 700 clamp(34px, 4vw, 54px)/1.06 var(--display); letter-spacing: 0; }
+		.intro-copy { max-width: 330px; margin: 0 0 3px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+		.story-layout { display: grid; grid-template-columns: 194px minmax(0, 1fr); gap: 22px; align-items: start; }
+		.story-nav { padding: 12px 0; border-top: 2px solid var(--ink); }
+		.story-nav, .chapter-list { min-width: 0; max-width: 100%; }
+		.nav-label { margin: 0 0 11px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+		.story-step { width: 100%; display: grid; grid-template-columns: 28px 1fr; gap: 9px; align-items: start; padding: 12px 9px; border: 0; border-left: 2px solid transparent; background: transparent; text-align: left; cursor: pointer; }
+		.story-step:hover { background: #eae9e2; }
+		.story-step[aria-current="step"] { border-left-color: var(--blue); background: var(--surface); }
+		.step-num { color: var(--muted); font: 11px var(--mono); padding-top: 2px; }
+		.story-step[aria-current="step"] .step-num { color: var(--blue); }
+		.step-name { font-size: 12px; font-weight: 600; line-height: 1.3; }
+		.workspace { min-width: 0; }
+		.story-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; padding: 0 0 16px; border-top: 2px solid var(--ink); padding-top: 14px; }
+		.story-head h2 { margin: 0; font: 700 23px/1.15 var(--display); letter-spacing: 0; }
+		.story-kicker { margin: 0 0 5px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+		.story-controls { display: flex; align-items: center; justify-content: flex-end; gap: 9px; flex-wrap: wrap; }
+		.control-wrap { display: flex; align-items: center; gap: 7px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+		select { max-width: min(270px, 42vw); min-height: 36px; padding: 0 30px 0 10px; border: 1px solid var(--rule); border-radius: 2px; background: var(--surface); font: 12px var(--sans); text-transform: none; }
+		.analysis-grid { display: grid; grid-template-columns: minmax(0, 1fr) 248px; gap: 14px; align-items: stretch; }
+		.analysis-grid.wide-chart { grid-template-columns: minmax(0, 1fr); }
+		.chart-panel { min-width: 0; padding: 18px 18px 12px; border: 1px solid var(--rule); background: var(--surface); }
+		.chart-topline { min-height: 37px; display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+		.chart-title { margin: 0; font-size: 13px; font-weight: 700; }
+		.chart-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+		.chart-legend { display: flex; gap: 13px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 10px; }
+		.legend-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+		.legend-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
+		.legend-dot.square { border-radius: 2px; }
+		.legend-dot.coral { background: var(--coral); }
+		.legend-dot.gray { background: #969e98; }
+		.chart-viewport { min-width: 0; width: 100%; overflow: auto hidden; }
+		.chart-tooltip { position: fixed; z-index: 20; max-width: min(300px, calc(100vw - 24px)); padding: 8px 10px; border: 1px solid #ffffff26; border-radius: 3px; background: #202622; color: #fffefa; box-shadow: 0 4px 14px #20262230; font-size: 12px; font-weight: 500; line-height: 1.4; pointer-events: none; }
+		.chart-tooltip[hidden] { display: none; }
+		#chart [data-tooltip]:focus { outline: none; filter: drop-shadow(0 0 2px #202622); }
+		#chart { display: block; width: 100%; min-width: 580px; height: auto; overflow: visible; }
+		#chart text { font-family: var(--sans); fill: var(--muted); font-size: 11px; }
+		#chart .axis { stroke: #cfd2cb; stroke-width: 1; }
+		#chart .grid { stroke: #e8e9e2; stroke-width: 1; }
+		#chart .axis-label { fill: var(--ink); font-size: 11px; }
+		#chart .value-label { fill: var(--ink); font-size: 12px; font-weight: 700; }
+		#chart .annotation { fill: var(--coral); font-size: 11px; font-weight: 700; }
+		.chart-note { min-height: 29px; margin: 4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+		.insight-panel { display: flex; flex-direction: column; padding: 18px; background: #e8eee8; border-top: 3px solid var(--green); }
+		.insight-label { color: var(--green); font: 500 10px var(--mono); text-transform: uppercase; }
+		.insight-panel h3 { margin: 14px 0 8px; font: 700 18px/1.2 var(--display); }
+		.insight-panel p { margin: 0; color: #56615a; font-size: 12px; line-height: 1.55; }
+		.stat-block { margin-top: auto; padding-top: 23px; }
+		.stat-number { display: block; color: var(--ink); font: 700 31px/1 var(--display); letter-spacing: 0; }
+		.stat-caption { display: block; margin-top: 6px; color: var(--muted); font: 10px var(--mono); line-height: 1.45; text-transform: uppercase; }
+		.data-footer { margin: 18px 0 0 216px; display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid var(--rule); padding-top: 11px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+		.data-footer p { margin: 0; }
+		.source-name { color: var(--ink); }
+		.methodology { margin: 42px 0 0 216px; border-top: 2px solid var(--ink); padding-top: 18px; }
+		.methodology-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+		.methodology h2 { margin: 0; font: 700 21px/1.2 var(--display); }
+		.methodology-head p { margin: 0; color: var(--muted); font-size: 12px; }
+		.methodology-grid { display: grid; grid-template-columns: .85fr 1.15fr 1.15fr; gap: 28px; }
+		.methodology-group { min-width: 0; border-top: 1px solid var(--rule); padding-top: 11px; }
+		.methodology-group h3 { margin: 0 0 12px; color: var(--blue); font: 500 10px var(--mono); text-transform: uppercase; }
+		.methodology-list { margin: 0; }
+		.methodology-list div { margin: 0 0 12px; }
+		.methodology-list dt { margin: 0 0 3px; color: var(--ink); font-size: 12px; font-weight: 700; }
+		.methodology-list dd { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+		.methodology-list p { margin: 0 0 11px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+		.error { padding: 18px; border: 1px solid var(--coral); background: var(--coral-soft); color: #702f25; font-size: 13px; line-height: 1.5; }
+		.scroll-chart { max-height: 610px; overflow: auto; }
+		.scroll-chart #chart { min-width: 650px; }
+		.plot-point { cursor: default; }
+		.plot-point:hover { stroke: var(--ink); stroke-width: 3; }
+		.heat-cell { cursor: default; }
+		.heat-cell:hover { stroke: var(--ink); stroke-width: 2; }
+		@media (max-width: 980px) {
+			main { padding: 28px 22px; }
+			.masthead { padding-inline: 22px; }
+			.story-layout { grid-template-columns: 1fr; gap: 15px; }
+			.story-nav { display: block; border-top: 0; border-bottom: 1px solid var(--rule); padding: 0; }
+			.chapter-list { display: grid; width: 100%; grid-auto-columns: minmax(104px, 1fr); grid-auto-flow: column; overflow-x: auto; }
+			.nav-label { display: none; }
+			.story-step { min-height: 60px; border-left: 0; border-bottom: 2px solid transparent; }
+			.story-step[aria-current="step"] { border-bottom-color: var(--blue); }
+			.data-footer, .methodology { margin-left: 0; }
+		}
+		@media (max-width: 720px) {
+			.masthead { padding: 15px 16px; }
+			.mast-meta { gap: 10px; font-size: 9px; }
+			main { padding: 26px 16px; }
+			.intro { grid-template-columns: 1fr; gap: 12px; margin-bottom: 23px; }
+			.intro-copy { max-width: 500px; }
+			.chapter-list { grid-auto-columns: 118px; }
+			.story-head { align-items: start; flex-direction: column; gap: 12px; }
+			.story-controls { justify-content: start; }
+			.analysis-grid { grid-template-columns: 1fr; }
+			.chart-panel { padding: 14px 12px 10px; }
+			.insight-panel { min-height: 168px; }
+			.stat-block { padding-top: 17px; }
+			.data-footer { flex-direction: column; gap: 7px; }
+			.methodology { margin-top: 32px; }
+			.methodology-head { align-items: start; flex-direction: column; gap: 7px; }
+			.methodology-grid { grid-template-columns: 1fr; gap: 18px; }
+			select { max-width: 72vw; }
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			.chart-panel, .insight-panel { animation: enter .35s ease-out both; }
+			@keyframes enter { from { opacity: .6; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+		}
+	</style>
+</head>
+<body>
+	<header class="masthead">
+		<div class="brand"><span class="brand-mark" aria-hidden="true">U</span><span>UniFit</span><span class="brand-tagline">Beyond rankings. Toward the right fit</span></div>
+		<div class="mast-meta"><span>Higher education</span><span>Australia · 2011–24</span><span class="data-state" id="dataState">Connecting to data</span></div>
+	</header>
+	<main>
+		<section class="intro" aria-labelledby="pageTitle">
+			<div><p class="eyebrow">Higher education · Australia</p><h1 id="pageTitle">Beyond rankings. Toward the right fit</h1></div>
+			<p class="intro-copy">Follow the numbers from access to student outcomes, then compare universities to see where the experience changes.</p>
+		</section>
+		<section class="story-layout" aria-label="Interactive data story">
+			<nav class="story-nav" aria-label="Story chapters" id="storyNav">
+				<p class="nav-label">Follow the evidence</p>
+				<div class="chapter-list" id="chapterList"></div>
+			</nav>
+			<div class="workspace">
+				<div class="story-head">
+					<div><p class="story-kicker" id="storyKicker">Chapter 01 · Access</p><h2 id="storyTitle">Who gets into university?</h2></div>
+					<div class="story-controls" id="storyControls"></div>
+				</div>
+				<div class="analysis-grid">
+					<section class="chart-panel" aria-label="Interactive chart">
+						<div class="chart-topline"><div><p class="chart-title" id="chartTitle"></p><p class="chart-subtitle" id="chartSubtitle"></p></div><div class="chart-legend" id="chartLegend"></div></div>
+						<div class="chart-viewport" id="chartViewport"><svg id="chart" role="img" aria-label="Interactive chart"></svg><div id="chartTooltip" class="chart-tooltip" role="tooltip" hidden></div></div>
+						<p class="chart-note" id="chartNote"></p>
+					</section>
+					<aside class="insight-panel" aria-live="polite">
+						<span class="insight-label" id="insightLabel">The signal</span>
+						<h3 id="insightTitle"></h3>
+						<p id="insightText"></p>
+						<div class="stat-block"><strong class="stat-number" id="statNumber"></strong><span class="stat-caption" id="statCaption"></span></div>
+					</aside>
+				</div>
+			</div>
+		</section>
+		<footer class="data-footer">
+			<p><span class="source-name">Source:</span> Department of Education, Section 16 Equity Performance Data 2024. Rates may be unavailable for some groups or years.</p>
+		</footer>
+		<section class="methodology" aria-labelledby="methodologyTitle">
+			<div class="methodology-head">
+				<h2 id="methodologyTitle">Understanding the data</h2>
+				<p>Definitions and scope used throughout these comparisons.</p>
+			</div>
+			<div class="methodology-grid">
+				<section class="methodology-group" aria-labelledby="generalNotesTitle">
+					<h3 id="generalNotesTitle">General notes</h3>
+					<dl class="methodology-list">
+						<div><dt>Student population</dt><dd>Domestic onshore students only, at Table A and Table B providers, across all course levels unless undergraduate is specified.</dd></div>
+						<div><dt>Rate</dt><dd>The indicator expressed as a percentage of all domestic onshore students.</dd></div>
+						<div><dt>EFTSL</dt><dd>Equivalent full-time study load.</dd></div>
+					</dl>
+				</section>
+				<section class="methodology-group" aria-labelledby="equityGroupsTitle">
+					<h3 id="equityGroupsTitle">Equity groups</h3>
+					<dl class="methodology-list">
+						<div><dt>Non-English Speaking Background (NESB)</dt><dd>A domestic student who arrived in Australia less than 10 years before the data was collected, from a home where a language other than English is spoken.</dd></div>
+						<div><dt>Disability</dt><dd>A student who has indicated one or more disability, impairment, or long-term medical condition that may affect their studies.</dd></div>
+						<div><dt>Regional/Remote</dt><dd>Derived from the ABS's Australian Statistical Geography Standard (MCEETYA 2006 classification), assigned by postcode.</dd></div>
+						<div><dt>Low SES</dt><dd>Based on the ABS SEIFA Index of Education and Occupation; students whose home postcode falls in the bottom 25% of areas nationally.</dd></div>
+					</dl>
+				</section>
+				<section class="methodology-group" aria-labelledby="metricsTitle">
+					<h3 id="metricsTitle">Metrics</h3>
+					<dl class="methodology-list">
+						<div><dt>Access Rate</dt><dd>Commencing students in the equity group divided by all commencing domestic onshore students.</dd></div>
+						<div><dt>Retention Rate</dt><dd>Retained students divided by (all enrolled students minus completed students); measures continuation from one year to the next.</dd></div>
+						<div><dt>Success Rate</dt><dd>EFTSL passed divided by EFTSL attempted (passed plus failed plus withdrawn).</dd></div>
+						<div><dt>Attainment Rate</dt><dd>Award course completions by the equity group divided by all domestic award course completions.</dd></div>
+					</dl>
+				</section>
+			</div>
+		</section>
+	</main>
+	<script>
+		const chapters = [
+			{ kicker: '01 · Who gets in?', title: 'Access is where the story begins', kind: 'groupAccess' },
+			{ kicker: '02 · Who stays?', title: 'The gap can continue after enrolment', kind: 'groupRetention' },
+			{ kicker: '03 · Beyond one measure', title: 'Equity outcomes are not one story', kind: 'outcomes' },
+			{ kicker: '04 · Provider variation', title: 'The same group can have different outcomes', kind: 'ranking' },
+			{ kicker: '05 · Compare the landscape', title: 'Access and retention tell different stories', kind: 'scatter' },
+			{ kicker: '06 · Find the context', title: 'Compare provider outcomes by state', kind: 'providerOverview' },
+			{ kicker: '07 · Your comparison', title: 'Compare a university that fits', kind: 'profile' }
+		];
+		const allGroups = ['Low SES by SA1', 'First Nations', 'Disability', 'Regional/Remote', 'Non-English Speaking Background'];
+		const groupShort = { 'Low SES by SA1': 'Low-SES', 'First Nations': 'First Nations', 'Regional/Remote': 'Regional / remote', 'Regional': 'Regional', 'Remote': 'Remote', 'Disability': 'Disability', 'Non-English Speaking Background': 'Non-English speaking', 'First Address Low SES by SA1': 'First address: low-SES', 'First Address Regional': 'First address: regional', 'First Address Regional/Remote': 'First address: regional / remote', 'First Address Remote': 'First address: remote', 'Undergraduate Low SES by SA1': 'Undergraduate low-SES', 'All Domestic': 'All domestic' };
+		const metricColumns = [ ['Access Rate', 2024, 'Access'], ['Attainment Rate', 2024, 'Attainment'], ['Retention Rate', 2023, 'Retention'], ['Success Rate', 2024, 'Success'] ];
+		const palette = { blue: '#2767c7', coral: '#d96b52', green: '#4b8565', gray: '#969e98', ink: '#202622', muted: '#68716b' };
+		const groupColors = { 'Low SES by SA1': palette.blue, 'First Nations': '#d05a3d', Disability: '#007f73', 'Regional/Remote': '#bd8e16', 'Non-English Speaking Background': '#a6537b' };
+		const stateColors = { NSW: '#2767c7', VIC: '#d96b52', QLD: '#4b8565', SA: '#bd8e16', WA: '#167f87', TAS: '#956235', ACT: '#397b9f', NT: '#b74f69', 'Multi-state': '#777b77' };
+		let records = [];
+		let values = new Map();
+		let years = new Set();
+		let institutions = [];
+		let institutionStates = new Map();
+		let nationalRegion = '';
+		let step = 0;
+		let selectedGroup = 'Low SES by SA1';
+		let selectedUniversity = '';
+		let selectedYear = null;
+
+		function parseCsv(text) {
+			const rows = [];
+			let row = [], cell = '', quoted = false;
+			for (let index = 0; index < text.length; index++) {
+				const char = text[index];
+				if (quoted) {
+					if (char === '"' && text[index + 1] === '"') { cell += '"'; index++; }
+					else if (char === '"') quoted = false;
+					else cell += char;
+				} else if (char === '"') quoted = true;
+				else if (char === ',') { row.push(cell); cell = ''; }
+				else if (char === '\n' || char === '\r') {
+					if (char === '\r' && text[index + 1] === '\n') index++;
+					row.push(cell); rows.push(row); row = []; cell = '';
+				} else cell += char;
+			}
+			if (cell || row.length) { row.push(cell); rows.push(row); }
+			const headers = rows.shift().map((header, index) => (index === 0 ? header.replace(/^\uFEFF/, '') : header).trim());
+			return rows.filter(values => values.length === headers.length).map(items => Object.fromEntries(headers.map((header, index) => [header, items[index].trim()])));
+		}
+
+		function key(regionType, region, group, metric, year) { return [regionType, region, group, metric, year].join('|'); }
+		function value(regionType, region, group, metric, year) { return values.get(key(regionType, region, group, metric, year)); }
+		function prettyGroup(group) { return groupShort[group] || group; }
+		function stateCategory(state) { return state === 'Multi' || state === 'Multi-State' ? 'Multi-state' : state; }
+		function setData(text) {
+			records = parseCsv(text);
+			values = new Map();
+			years = new Set();
+			nationalRegion = records.find(item => item['Region Type'] === 'National')?.Region || '';
+			institutionStates = new Map();
+			for (const item of records) {
+				const rate = Number(item['Rate (%)']);
+				const year = Number(item.Year);
+				if (!Number.isFinite(rate) || !Number.isFinite(year)) continue;
+				values.set(key(item['Region Type'], item.Region, item['Equity Group'], item.Metric, year), rate);
+				if (item['Region Type'] === 'Higher Education Institution' && !institutionStates.has(item.Region)) institutionStates.set(item.Region, stateCategory(item.State));
+				years.add(year);
+			}
+			institutions = [...new Set(records.filter(item => item['Region Type'] === 'Higher Education Institution').map(item => item.Region))].sort((a, b) => a.localeCompare(b));
+			if (!institutions.includes(selectedUniversity)) selectedUniversity = '';
+			document.getElementById('dataState').textContent = `${records.length.toLocaleString()} records loaded`;
+			document.getElementById('dataState').classList.add('ready');
+			render();
+		}
+
+		function svgBase(width, height, viewBoxWidth = width) {
+			const svg = document.getElementById('chart');
+			svg.setAttribute('viewBox', `0 0 ${viewBoxWidth} ${height}`);
+			svg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+			svg.setAttribute('height', height);
+			svg.innerHTML = '';
+			return svg;
+		}
+		function line(x1, y1, x2, y2, className = 'grid', extra = '') { return `<line class="${className}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${extra}/>`; }
+		function text(x, y, label, className = '', anchor = 'middle', extra = '') { return `<text x="${x}" y="${y}" text-anchor="${anchor}" class="${className}" ${extra}>${escapeHtml(label)}</text>`; }
+		function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]); }
+		function setLegend(items) { document.getElementById('chartLegend').innerHTML = items.map(item => `<span class="legend-item"><i class="legend-dot ${item.tone || ''} ${item.square ? 'square' : ''}" ${item.color ? `style="background:${item.color}"` : ''}></i>${escapeHtml(item.label)}</span>`).join(''); }
+		function setChartMeta(title, subtitle, note) {
+			document.getElementById('chartTitle').textContent = title;
+			document.getElementById('chartSubtitle').textContent = subtitle;
+			document.getElementById('chartNote').textContent = note;
+		}
+		function setInsight(label, title, copy, number, caption) {
+			document.getElementById('insightLabel').textContent = label;
+			document.getElementById('insightTitle').textContent = title;
+			document.getElementById('insightText').textContent = copy;
+			document.getElementById('statNumber').textContent = number;
+			document.getElementById('statCaption').textContent = caption;
+		}
+		const chart = document.getElementById('chart');
+		const chartTooltip = document.getElementById('chartTooltip');
+		document.body.append(chartTooltip);
+		function promoteChartTitles() {
+			chart.querySelectorAll('title').forEach(title => {
+				const mark = title.parentElement;
+				const label = title.textContent;
+				mark.dataset.tooltip = label;
+				mark.setAttribute('tabindex', '0');
+				mark.setAttribute('aria-label', label);
+				title.remove();
+			});
+		}
+		function positionChartTooltip(x, y) {
+			const gap = 14;
+			chartTooltip.style.top = '8px';
+			const initialBounds = chartTooltip.getBoundingClientRect();
+			const left = Math.min(x + gap, window.innerWidth - initialBounds.width - 8);
+			chartTooltip.style.left = `${Math.max(8, left)}px`;
+			const finalBounds = chartTooltip.getBoundingClientRect();
+			const top = Math.min(y + gap, window.innerHeight - finalBounds.height - 8);
+			chartTooltip.style.top = `${Math.max(8, top)}px`;
+		}
+		function showChartTooltip(mark, x, y) {
+			if (!mark?.dataset.tooltip) return;
+			chartTooltip.textContent = mark.dataset.tooltip;
+			chartTooltip.hidden = false;
+			positionChartTooltip(x, y);
+		}
+		chart.addEventListener('pointerover', event => {
+			const mark = event.target.closest('[data-tooltip]');
+			if (mark) showChartTooltip(mark, event.clientX, event.clientY);
+		});
+		chart.addEventListener('pointermove', event => {
+			if (!chartTooltip.hidden) positionChartTooltip(event.clientX, event.clientY);
+		});
+		chart.addEventListener('pointerout', event => {
+			if (!event.relatedTarget?.closest?.('[data-tooltip]')) chartTooltip.hidden = true;
+		});
+		chart.addEventListener('focusin', event => {
+			const mark = event.target.closest('[data-tooltip]');
+			if (mark) {
+				const bounds = mark.getBoundingClientRect();
+				showChartTooltip(mark, bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+			}
+		});
+		chart.addEventListener('focusout', () => { chartTooltip.hidden = true; });
+		function yearsWith(group, metric, regionType, region) {
+			return [...years].filter(year => value(regionType, region, group, metric, year) !== undefined).sort((a, b) => a - b);
+		}
+		function chartYears(kind) {
+			const available = [...years].sort((a, b) => a - b);
+			return available.filter(year => {
+				if (kind === 'groupAccess' || kind === 'groupRetention') return false;
+				if (kind === 'outcomes') return allGroups.filter(group => group !== 'Regional/Remote').every(group => ['Access Rate', 'Retention Rate', 'Success Rate'].every(metric => value('National', nationalRegion, group, metric, year) !== undefined));
+				if (kind === 'ranking') return institutions.some(name => value('Higher Education Institution', name, selectedGroup, 'Retention Rate', year) !== undefined && value('Higher Education Institution', name, 'All Domestic', 'Retention Rate', year) !== undefined);
+				if (kind === 'scatter') return institutions.some(name => value('Higher Education Institution', name, selectedGroup, 'Access Rate', year) !== undefined && value('Higher Education Institution', name, selectedGroup, 'Retention Rate', year) !== undefined);
+				if (kind === 'providerOverview') return institutions.some(name => ['Access Rate', 'Retention Rate', 'Success Rate'].every(metric => value('Higher Education Institution', name, selectedGroup, metric, year) !== undefined));
+				if (kind === 'profile') return allGroups.filter(group => group !== 'Regional/Remote').every(group => institutions.some(name => ['Access Rate', 'Attainment Rate', 'Retention Rate', 'Success Rate'].every(metric => value('Higher Education Institution', name, group, metric, year) !== undefined)));
+				return false;
+			});
+		}
+		function currentChapters() { return chapters; }
+		function groupOptions(kind) {
+			return allGroups.filter(group => {
+				if (kind === 'access') return yearsWith(group, 'Access Rate', 'National', nationalRegion).length > 0;
+				if (kind === 'retention') return yearsWith(group, 'Retention Rate', 'National', nationalRegion).length > 0 && group !== 'All Domestic';
+				if (kind === 'ranking') return institutions.some(name => value('Higher Education Institution', name, group, 'Retention Rate', selectedYear) !== undefined && value('Higher Education Institution', name, 'All Domestic', 'Retention Rate', selectedYear) !== undefined);
+				if (kind === 'scatter') return institutions.some(name => value('Higher Education Institution', name, group, 'Access Rate', selectedYear) !== undefined && value('Higher Education Institution', name, group, 'Retention Rate', selectedYear) !== undefined);
+				if (kind === 'providerOverview') return institutions.some(name => ['Access Rate', 'Retention Rate', 'Success Rate'].every(metric => value('Higher Education Institution', name, group, metric, selectedYear) !== undefined));
+				if (kind === 'profile') return institutions.some(name => metricColumns.some(([metric]) => value('Higher Education Institution', name, group, metric, selectedYear) !== undefined));
+				return yearsWith(group, 'Access Rate', 'National', nationalRegion).length > 0 && yearsWith(group, 'Retention Rate', 'National', nationalRegion).includes(2023);
+			}).filter(group => group !== 'All Domestic');
+		}
+		function pathFrom(points) { return points.map((point, index) => `${index ? 'L' : 'M'}${point[0].toFixed(1)},${point[1].toFixed(1)}`).join(' '); }
+		function groupDash(group) {
+			return { 'Low SES by SA1': '', 'First Nations': '6 3', Disability: '2 3', 'Regional/Remote': '8 3', 'Non-English Speaking Background': '6 2 2 2' }[group] || '';
+		}
+		function groupMarker(x, y, group, color, label) {
+			let mark;
+			if (group === 'First Nations') mark = `<polygon points="${x},${y - 4.5} ${x + 4.2},${y + 3.5} ${x - 4.2},${y + 3.5}" fill="${color}"/>`;
+			else if (group === 'Disability') mark = `<rect x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" fill="${color}"/>`;
+			else if (group === 'Regional/Remote') mark = `<polygon points="${x},${y - 4.5} ${x + 4.5},${y} ${x},${y + 4.5} ${x - 4.5},${y}" fill="${color}"/>`;
+			else if (group === 'Non-English Speaking Background') mark = `<path d="M${x - 3.5},${y - 3.5} L${x + 3.5},${y + 3.5} M${x + 3.5},${y - 3.5} L${x - 3.5},${y + 3.5}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
+			else mark = `<circle cx="${x}" cy="${y}" r="3.8" fill="${color}"/>`;
+			return `<g tabindex="0" aria-label="${escapeHtml(label)}"><title>${escapeHtml(label)}</title>${mark}</g>`;
+		}
+		function emptyChart(message) {
+			const svg = svgBase(900, 250);
+			svg.innerHTML = text(450, 125, message, 'axis-label');
+			setLegend([]);
+			setChartMeta('No comparable observations', message, 'Choose a group with reported data for this measure.');
+			setInsight('Data coverage', 'This comparison is not reported', message, 'n/a', 'no matching records');
+		}
+		function controlMarkup() {
+			const chapter = currentChapters()[step];
+			let html = '';
+			const yearOptions = chartYears(chapter.kind);
+			if (yearOptions.length) {
+				if (!yearOptions.includes(selectedYear)) selectedYear = yearOptions[yearOptions.length - 1];
+				html += `<label class="control-wrap">Year <select id="yearSelect">${yearOptions.slice().reverse().map(year => `<option value="${year}" ${selectedYear === year ? 'selected' : ''}>${year}</option>`).join('')}</select></label>`;
+			}
+			if (['access', 'retention', 'ranking', 'scatter', 'providerOverview', 'profile'].includes(chapter.kind)) {
+				const options = groupOptions(chapter.kind);
+				if (!options.includes(selectedGroup)) selectedGroup = options[0] || '';
+				html += `<label class="control-wrap">Equity group <select id="groupSelect">${options.map(group => `<option value="${escapeHtml(group)}" ${selectedGroup === group ? 'selected' : ''}>${escapeHtml(prettyGroup(group))}</option>`).join('')}</select></label>`;
+			}
+			if (chapter.kind === 'profile') html = `<label class="control-wrap">Compare university <select id="universitySelect"><option value="" ${selectedUniversity ? '' : 'selected'}>Choose a university</option>${institutions.map(name => `<option value="${escapeHtml(name)}" ${selectedUniversity === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select></label>${html}`;
+			document.getElementById('storyControls').innerHTML = html;
+			const yearSelect = document.getElementById('yearSelect');
+			if (yearSelect) yearSelect.addEventListener('change', event => { selectedYear = Number(event.target.value); render(); });
+			const groupSelect = document.getElementById('groupSelect');
+			if (groupSelect) groupSelect.addEventListener('change', event => { selectedGroup = event.target.value; render(); });
+			const universitySelect = document.getElementById('universitySelect');
+			if (universitySelect) universitySelect.addEventListener('change', event => { selectedUniversity = event.target.value; render(); });
+		}
+
+		function drawAccess() {
+			const allYears = yearsWith(selectedGroup, 'Access Rate', 'National', nationalRegion);
+			if (!allYears.length) return emptyChart(`No national access data for ${prettyGroup(selectedGroup)}.`);
+			const data = allYears.map(year => [year, value('National', nationalRegion, selectedGroup, 'Access Rate', year)]);
+			const svg = svgBase(900, 390);
+			const bounds = { left: 70, right: 820, top: 34, bottom: 315 };
+			const x = year => bounds.left + (year - allYears[0]) / (allYears[allYears.length - 1] - allYears[0]) * (bounds.right - bounds.left);
+			const y = rate => bounds.bottom - rate / 30 * (bounds.bottom - bounds.top);
+			let html = '';
+			[0, 10, 20, 30].forEach(tick => { html += line(bounds.left, y(tick), bounds.right, y(tick)); html += text(bounds.left - 12, y(tick) + 4, `${tick}%`, '', 'end'); });
+			html += line(bounds.left, bounds.top, bounds.left, bounds.bottom, 'axis') + line(bounds.left, bounds.bottom, bounds.right, bounds.bottom, 'axis');
+			const points = data.map(([year, rate]) => [x(year), y(rate)]);
+			html += `<path d="${pathFrom([[x(data[0][0]), y(0)], ...points, [x(data[data.length - 1][0]), y(0)]])} Z" fill="${palette.blue}" opacity=".09"/>`;
+			if (selectedGroup === 'Low SES by SA1') html += line(bounds.left, y(25), bounds.right, y(25), 'axis', 'stroke-dasharray="5 5"');
+			html += `<path d="${pathFrom(points)}" fill="none" stroke="${palette.blue}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+			points.forEach(([px, py], index) => { const [year, rate] = data[index]; html += `<circle cx="${px}" cy="${py}" r="4.5" fill="${palette.blue}" stroke="white" stroke-width="2"><title>${year}: ${rate.toFixed(2)}%</title></circle>`; });
+			const last = data[data.length - 1];
+			if (selectedGroup === 'Low SES by SA1') html += text(bounds.right, y(25) - 9, 'Population reference · 25%', 'annotation', 'end');
+			html += text(x(last[0]) - 6, y(last[1]) - 15, `${last[1].toFixed(1)}%`, 'value-label', 'end');
+			allYears.filter(year => year % 2 === 1 || year === allYears[allYears.length - 1]).forEach(year => { html += text(x(year), bounds.bottom + 23, String(year)); });
+			html += text((bounds.left + bounds.right) / 2, 372, 'Year', 'axis-label');
+			svg.innerHTML = html;
+			setLegend([{ label: `${prettyGroup(selectedGroup)} commencing students` }, ...(selectedGroup === 'Low SES by SA1' ? [{ label: 'Population share · 25%', tone: 'coral' }] : [])]);
+			setChartMeta(`${prettyGroup(selectedGroup)} access over time`, `Share of commencing domestic students · latest reported year ${last[0]}`, selectedGroup === 'Low SES by SA1' ? 'The 25% line is a reference point, not an enrolment target.' : 'The 25% reference is specific to low-SES representation and is not shown for other groups.');
+			const movement = last[1] - data[0][1];
+			setInsight('The signal', `${prettyGroup(selectedGroup)} access changes over time`, 'The trend shows the share of commencing domestic students recorded in this equity group. Use the group selector to inspect another population.', `${movement >= 0 ? '+' : ''}${movement.toFixed(1)} pts`, `change · ${data[0][0]} to ${last[0]}`);
+		}
+
+		function drawRetention() {
+			const lowYears = yearsWith(selectedGroup, 'Retention Rate', 'National', nationalRegion);
+			const allYears = yearsWith('All Domestic', 'Retention Rate', 'National', nationalRegion);
+			const shared = lowYears.filter(year => allYears.includes(year));
+			if (!shared.length) return emptyChart(`No comparable national retention data for ${prettyGroup(selectedGroup)}.`);
+			const dataLow = shared.map(year => [year, value('National', nationalRegion, selectedGroup, 'Retention Rate', year)]);
+			const dataAll = shared.map(year => [year, value('National', nationalRegion, 'All Domestic', 'Retention Rate', year)]);
+			const svg = svgBase(900, 390);
+			const bounds = { left: 72, right: 820, top: 34, bottom: 315 };
+			const x = year => bounds.left + (year - shared[0]) / (shared[shared.length - 1] - shared[0]) * (bounds.right - bounds.left);
+			const y = rate => bounds.bottom - (rate - 50) / 50 * (bounds.bottom - bounds.top);
+			let html = '';
+			[50, 60, 70, 80, 90, 100].forEach(tick => { html += line(bounds.left, y(tick), bounds.right, y(tick)); html += text(bounds.left - 12, y(tick) + 4, `${tick}%`, '', 'end'); });
+			html += line(bounds.left, bounds.top, bounds.left, bounds.bottom, 'axis') + line(bounds.left, bounds.bottom, bounds.right, bounds.bottom, 'axis');
+			const lowPoints = dataLow.map(([year, rate]) => [x(year), y(rate)]);
+			const allPoints = dataAll.map(([year, rate]) => [x(year), y(rate)]);
+			const gapArea = [...allPoints, ...lowPoints.slice().reverse()];
+			html += `<path d="${pathFrom(gapArea)} Z" fill="${palette.coral}" opacity=".12"/>`;
+			html += `<path d="${pathFrom(allPoints)}" fill="none" stroke="${palette.gray}" stroke-width="3" stroke-linejoin="round"/>`;
+			html += `<path d="${pathFrom(lowPoints)}" fill="none" stroke="${palette.blue}" stroke-width="3" stroke-linejoin="round"/>`;
+			[dataAll, dataLow].forEach((series, seriesIndex) => series.forEach(([year, rate]) => { html += `<circle cx="${x(year)}" cy="${y(rate)}" r="3.5" fill="${seriesIndex ? palette.blue : palette.gray}"><title>${seriesIndex ? 'Low-SES' : 'All domestic'}, ${year}: ${rate.toFixed(2)}%</title></circle>`; }));
+			for (const year of [shared[0], shared[shared.length - 1]]) {
+				const low = value('National', nationalRegion, selectedGroup, 'Retention Rate', year);
+				const all = value('National', nationalRegion, 'All Domestic', 'Retention Rate', year);
+				html += line(x(year), y(all), x(year), y(low), 'axis', `stroke="${palette.coral}" stroke-width="2"`);
+				html += text(x(year) + (year === shared[0] ? 12 : -12), (y(all) + y(low)) / 2 + 4, `${(all - low).toFixed(1)} pts`, 'annotation', year === shared[0] ? 'start' : 'end');
+			}
+			shared.filter(year => year % 2 === 1 || year === shared[shared.length - 1]).forEach(year => { html += text(x(year), bounds.bottom + 23, String(year)); });
+			html += text((bounds.left + bounds.right) / 2, 372, 'Year', 'axis-label');
+			svg.innerHTML = html;
+			setLegend([{ label: prettyGroup(selectedGroup) }, { label: 'All domestic students', tone: 'gray' }, { label: 'Difference', tone: 'coral' }]);
+			setChartMeta(`${prettyGroup(selectedGroup)} retention compared with all domestic`, 'First-year retention · national rates', `The latest available year is ${shared[shared.length - 1]}. Groups without retention data are removed from the selector.`);
+			const firstGap = value('National', nationalRegion, 'All Domestic', 'Retention Rate', shared[0]) - value('National', nationalRegion, selectedGroup, 'Retention Rate', shared[0]);
+			const finalYear = shared[shared.length - 1];
+			const latestGap = value('National', nationalRegion, 'All Domestic', 'Retention Rate', finalYear) - value('National', nationalRegion, selectedGroup, 'Retention Rate', finalYear);
+			setInsight('The pattern', `${prettyGroup(selectedGroup)} and all-domestic retention`, 'Compare the group’s trend with the all-domestic benchmark. The gap can widen, narrow or reverse depending on the population.', `${firstGap.toFixed(1)} → ${latestGap.toFixed(1)}`, `point gap · ${shared[0]} to ${finalYear}`);
+		}
+
+		function drawRanking() {
+			const year = selectedYear;
+			const rows = institutions.map(name => ({ name, group: value('Higher Education Institution', name, selectedGroup, 'Retention Rate', year), all: value('Higher Education Institution', name, 'All Domestic', 'Retention Rate', year) })).filter(item => item.group !== undefined).sort((a, b) => a.group - b.group);
+			const width = 900, height = Math.max(390, 95 + rows.length * 25), left = 275, right = 835, top = 25, rowHeight = 25;
+			const svg = svgBase(width, height);
+			const min = 50, max = 100, x = rate => left + (rate - min) / (max - min) * (right - left);
+			let html = '';
+			[50, 60, 70, 80, 90, 100].forEach(tick => { html += line(x(tick), top, x(tick), top + rows.length * rowHeight, 'grid'); html += text(x(tick), 15, `${tick}%`); });
+			const national = value('National', nationalRegion, selectedGroup, 'Retention Rate', year);
+			if (national !== undefined) { html += line(x(national), top, x(national), top + rows.length * rowHeight, 'axis', 'stroke-dasharray="4 4"'); html += text(x(national) + 5, 27, `National ${national.toFixed(1)}%`, 'annotation', 'start'); }
+			rows.forEach((item, index) => {
+				const cy = top + index * rowHeight + 15;
+				const start = Math.min(item.group, item.all);
+				html += text(left - 13, cy + 4, shortName(item.name), '', 'end', `font-size="10"`);
+				html += line(x(start), cy, x(Math.max(item.group, item.all)), cy, 'axis', 'stroke-width="2"');
+				html += `<circle class="plot-point" cx="${x(item.all)}" cy="${cy}" r="4" fill="${palette.gray}"><title>${escapeHtml(item.name)} · all domestic: ${item.all.toFixed(1)}%</title></circle>`;
+				html += `<circle class="plot-point" cx="${x(item.group)}" cy="${cy}" r="5" fill="${palette.blue}"><title>${escapeHtml(item.name)} · ${escapeHtml(prettyGroup(selectedGroup))}: ${item.group.toFixed(1)}%</title></circle>`;
+			});
+			svg.innerHTML = html;
+			document.getElementById('chartViewport').classList.add('scroll-chart');
+			setLegend([{ label: prettyGroup(selectedGroup) }, { label: 'All domestic students', tone: 'gray' }]);
+			setChartMeta(`${rows.length} universities · ${year}`, `${prettyGroup(selectedGroup)} retention rate compared with all domestic students at each provider`, 'Providers are sorted from lower to higher group retention. No provider is selected or emphasized.');
+			const spread = rows.length ? `${(rows[rows.length - 1].group - rows[0].group).toFixed(1)} pts` : 'No data';
+			setInsight('The provider gap', 'National averages conceal a wide range', `Across providers with reported ${prettyGroup(selectedGroup).toLowerCase()} data, retention varies substantially. Compare within each row to see whether the group trails its own university benchmark.`, spread, `spread across ${rows.length} providers`);
+		}
+
+		function shortName(name) {
+			return name.replace(/^The University of /, 'U ').replace(/^University of /, 'U ').replace(/^The /, '').replace(/ University$/, ' Uni').replace('University of Technology', 'U Tech');
+		}
+
+		function drawScatter() {
+			const rows = institutions.map(name => ({ name, state: institutionStates.get(name) || 'Multi-state', access: value('Higher Education Institution', name, selectedGroup, 'Access Rate', selectedYear), retention: value('Higher Education Institution', name, selectedGroup, 'Retention Rate', selectedYear) })).filter(item => item.access !== undefined && item.retention !== undefined);
+			const svg = svgBase(900, 440);
+			const bounds = { left: 78, right: 820, top: 32, bottom: 350 };
+			const x = rate => bounds.left + rate / 30 * (bounds.right - bounds.left);
+			const y = rate => bounds.bottom - (rate - 50) / 50 * (bounds.bottom - bounds.top);
+			let html = '';
+			[0, 10, 20, 30].forEach(tick => { html += line(x(tick), bounds.top, x(tick), bounds.bottom); html += text(x(tick), bounds.bottom + 22, `${tick}%`); });
+			[50, 60, 70, 80, 90, 100].forEach(tick => { html += line(bounds.left, y(tick), bounds.right, y(tick)); html += text(bounds.left - 12, y(tick) + 4, `${tick}%`, '', 'end'); });
+			html += line(bounds.left, bounds.top, bounds.left, bounds.bottom, 'axis') + line(bounds.left, bounds.bottom, bounds.right, bounds.bottom, 'axis');
+			const nationalAccess = value('National', nationalRegion, selectedGroup, 'Access Rate', selectedYear);
+			const nationalRetention = value('National', nationalRegion, selectedGroup, 'Retention Rate', selectedYear);
+			if (nationalAccess !== undefined && nationalRetention !== undefined) {
+				html += line(x(nationalAccess), bounds.top, x(nationalAccess), bounds.bottom, 'axis', 'stroke-dasharray="4 4"');
+				html += line(bounds.left, y(nationalRetention), bounds.right, y(nationalRetention), 'axis', 'stroke-dasharray="4 4"');
+			}
+			rows.forEach(item => {
+				const color = stateColors[item.state] || palette.gray;
+				html += `<circle class="plot-point" cx="${x(item.access)}" cy="${y(item.retention)}" r="5" fill="${color}" fill-opacity=".9" stroke="white" stroke-width="1.5"><title>${escapeHtml(item.name)} · ${escapeHtml(item.state)} · ${prettyGroup(selectedGroup)} access ${item.access.toFixed(1)}% · retention ${item.retention.toFixed(1)}%</title></circle>`;
+			});
+			html += text((bounds.left + bounds.right) / 2, 412, `Access rate · ${selectedYear}`, 'axis-label');
+			html += `<text x="18" y="${(bounds.top + bounds.bottom) / 2}" class="axis-label" text-anchor="middle" transform="rotate(-90 18 ${(bounds.top + bounds.bottom) / 2})">Retention rate · ${selectedYear}</text>`;
+			svg.innerHTML = html;
+			document.getElementById('chartViewport').classList.remove('scroll-chart');
+			const states = [...new Set(rows.map(item => item.state))].sort((a, b) => a.localeCompare(b));
+			setLegend(states.map(state => ({ label: state, color: stateColors[state] || palette.gray, square: true })));
+			setChartMeta(`${rows.length} universities · ${selectedYear}`, `Each point compares access and retention for ${prettyGroup(selectedGroup)} students`, 'Colour identifies the provider state. Dashed lines mark national rates. Hover a point for its provider and exact rates; no university is highlighted.');
+			setInsight('Compare', 'Access and retention tell different stories', `The state colours help orient the provider landscape for ${prettyGroup(selectedGroup).toLowerCase()} students. Compare universities’ positions against the national reference without reducing them to one rank.`, String(rows.length), 'providers with both measures');
+		}
+
+		function drawGroupAccess() {
+			const comparable = allGroups.filter(group => yearsWith(group, 'Access Rate', 'National', nationalRegion).includes(2024));
+			const svg = svgBase(900, 400);
+			const bounds = { left: 72, right: 820, top: 34, bottom: 322 };
+			const x = year => bounds.left + (year - 2011) / 13 * (bounds.right - bounds.left);
+			const y = rate => bounds.bottom - rate / 35 * (bounds.bottom - bounds.top);
+			let html = '';
+			[0, 10, 20, 30].forEach(tick => { html += line(bounds.left, y(tick), bounds.right, y(tick)); html += text(bounds.left - 12, y(tick) + 4, `${tick}%`, '', 'end'); });
+			html += line(bounds.left, bounds.top, bounds.left, bounds.bottom, 'axis') + line(bounds.left, bounds.bottom, bounds.right, bounds.bottom, 'axis');
+			comparable.forEach((group, index) => {
+				const data = yearsWith(group, 'Access Rate', 'National', nationalRegion).map(year => [year, value('National', nationalRegion, group, 'Access Rate', year)]);
+				const points = data.map(([year, rate]) => [x(year), y(rate)]);
+				const color = groupColors[group];
+				html += `<path d="${pathFrom(points)}" fill="none" stroke="${color}" stroke-width="2.5" stroke-dasharray="${groupDash(group)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+				points.forEach(([px, py], pointIndex) => { const [year, rate] = data[pointIndex]; html += groupMarker(px, py, group, color, `${prettyGroup(group)}, ${year}: ${rate.toFixed(1)}%`); });
+			});
+			[2011, 2013, 2015, 2017, 2019, 2021, 2023, 2024].forEach(year => { html += text(x(year), bounds.bottom + 22, String(year)); });
+			html += text((bounds.left + bounds.right) / 2, 376, 'Year', 'axis-label');
+			svg.innerHTML = html;
+			setLegend(comparable.map(group => ({ label: prettyGroup(group), color: groupColors[group] })));
+			setChartMeta('Different groups, different starting points', 'Share of commencing domestic students · Australia · 2011–2024', `All ${comparable.length} requested groups have access data. The source does not report an all-domestic access benchmark.`);
+			setInsight('The comparison', '“Equity students” is not one outcome', 'Access levels and trends differ substantially among groups. The same umbrella label can conceal different histories and different support needs.', String(comparable.length), 'equity groups shown');
+		}
+
+		function drawGroupRetention() {
+			const available = allGroups.filter(group => yearsWith(group, 'Retention Rate', 'National', nationalRegion).length > 0);
+			const svg = svgBase(900, 420);
+			const bounds = { left: 72, right: 820, top: 34, bottom: 340 };
+			const x = year => bounds.left + (year - 2011) / 12 * (bounds.right - bounds.left);
+			const y = rate => bounds.bottom - (rate - 45) / 55 * (bounds.bottom - bounds.top);
+			let html = '';
+			[50, 60, 70, 80, 90, 100].forEach(tick => { html += line(bounds.left, y(tick), bounds.right, y(tick)); html += text(bounds.left - 12, y(tick) + 4, `${tick}%`, '', 'end'); });
+			html += line(bounds.left, bounds.top, bounds.left, bounds.bottom, 'axis') + line(bounds.left, bounds.bottom, bounds.right, bounds.bottom, 'axis');
+			available.forEach(group => {
+				const data = yearsWith(group, 'Retention Rate', 'National', nationalRegion).map(year => [year, value('National', nationalRegion, group, 'Retention Rate', year)]);
+				const points = data.map(([year, rate]) => [x(year), y(rate)]);
+				const color = groupColors[group];
+				html += `<path d="${pathFrom(points)}" fill="none" stroke="${color}" stroke-width="2.4" stroke-dasharray="${groupDash(group)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+				points.forEach(([px, py], pointIndex) => { const [year, rate] = data[pointIndex]; html += groupMarker(px, py, group, color, `${prettyGroup(group)}, ${year}: ${rate.toFixed(1)}%`); });
+			});
+			const domestic = yearsWith('All Domestic', 'Retention Rate', 'National', nationalRegion).map(year => [year, value('National', nationalRegion, 'All Domestic', 'Retention Rate', year)]);
+			const domesticPoints = domestic.map(([year, rate]) => [x(year), y(rate)]);
+			html += `<path d="${pathFrom(domesticPoints)}" fill="none" stroke="${palette.ink}" stroke-width="2.5" stroke-dasharray="7 5" stroke-linecap="round"/>`;
+			domesticPoints.forEach(([px, py], pointIndex) => { const [year, rate] = domestic[pointIndex]; html += `<circle cx="${px}" cy="${py}" r="2.5" fill="${palette.ink}"><title>All domestic, ${year}: ${rate.toFixed(1)}%</title></circle>`; });
+			[2011, 2013, 2015, 2017, 2019, 2021, 2023].forEach(year => { html += text(x(year), bounds.bottom + 22, String(year)); });
+			html += text((bounds.left + bounds.right) / 2, 393, 'Year', 'axis-label');
+			svg.innerHTML = html;
+			setLegend([...allGroups.map(group => ({ label: group === 'Regional/Remote' ? 'Regional / remote · not reported' : prettyGroup(group), color: groupColors[group] })), { label: 'All domestic benchmark', color: palette.ink }]);
+			setChartMeta('The post-enrolment picture is not uniform', 'First-year retention rate · national equity-group trends · 2011–2023', 'All available years are shown. The dashed line is the all-domestic benchmark; Regional/Remote has no reported retention series.');
+			setInsight('After enrolment', `${available.length} of ${allGroups.length} groups have a reported trend`, 'Compare the equity-group lines with the all-domestic benchmark. Regional/Remote remains visible as a data gap rather than being inferred.', String(available.length), 'equity groups with retention data');
+		}
+
+		function drawOutcomes() {
+			const outcomeMetrics = [['Access Rate', selectedYear, 'Access'], ['Retention Rate', selectedYear, 'Retention'], ['Success Rate', selectedYear, 'Success']];
+			const shownGroups = allGroups.filter(group => outcomeMetrics.some(([metric, year]) => value('National', nationalRegion, group, metric, year) !== undefined));
+			const svg = svgBase(900, 440);
+			const bounds = { left: 85, right: 825, top: 34, bottom: 345 };
+			const categoryWidth = (bounds.right - bounds.left) / outcomeMetrics.length;
+			const y = (metric, rate) => metric === 'Access Rate'
+				? bounds.bottom - rate / 30 * (bounds.bottom - bounds.top)
+				: bounds.bottom - (rate - 50) / 50 * (bounds.bottom - bounds.top);
+			let html = '';
+			outcomeMetrics.forEach(([metric, year, label], column) => {
+				const xLeft = bounds.left + categoryWidth * column;
+				const xRight = xLeft + categoryWidth;
+				const ticks = metric === 'Access Rate' ? [0, 10, 20, 30] : [50, 60, 70, 80, 90, 100];
+				ticks.forEach(tick => { html += line(xLeft, y(metric, tick), xRight, y(metric, tick)); html += text(xLeft - 8, y(metric, tick) + 4, `${tick}%`, '', 'end'); });
+				const cx = bounds.left + categoryWidth * (column + .5);
+				html += text(cx, 21, `${label} · ${year}`, 'axis-label');
+				const groupWidth = Math.min(78, (categoryWidth - 14) / shownGroups.length);
+				shownGroups.forEach((group, index) => {
+					const rate = value('National', nationalRegion, group, metric, year);
+					const barX = cx - shownGroups.length * groupWidth / 2 + index * groupWidth + 4;
+					if (rate === undefined) {
+						html += text(barX + (groupWidth - 7) / 2, bounds.bottom - 5, 'n/a', '', 'middle', 'font-size="9"');
+						return;
+					}
+					const barY = y(metric, rate);
+					const color = groupColors[group];
+					html += `<rect x="${barX}" y="${barY}" width="${groupWidth - 7}" height="${bounds.bottom - barY}" fill="${color}" opacity=".82"><title>${escapeHtml(prettyGroup(group))}: ${rate.toFixed(1)}%</title></rect>`;
+					html += text(barX + (groupWidth - 7) / 2, barY - 7, `${rate.toFixed(1)}%`, 'value-label', 'middle', 'font-size="10"');
+				});
+			});
+			svg.innerHTML = html;
+			setLegend(shownGroups.map(group => ({ label: prettyGroup(group), color: groupColors[group] })));
+			setChartMeta('Entry, persistence and course success', `National equity-group rates · ${selectedYear}`, 'Values are printed above each bar. Access uses a 0–30% scale; retention and success use 50–100% scales. Regional/Remote is n/a for retention and success.');
+			const completeGroups = shownGroups.filter(group => outcomeMetrics.every(([metric, year]) => value('National', nationalRegion, group, metric, year) !== undefined));
+			setInsight('The wider gap', 'The realisation: access is only one part', 'A group can look different depending on whether the question is access, staying enrolled or completing successfully. Missing data is not the same as an equal outcome.', String(completeGroups.length), 'groups with all three outcomes');
+		}
+
+		function drawProviderOverview() {
+			const rows = institutions.map(name => ({ name, state: institutionStates.get(name) || 'Multi-state', access: value('Higher Education Institution', name, selectedGroup, 'Access Rate', selectedYear), retention: value('Higher Education Institution', name, selectedGroup, 'Retention Rate', selectedYear), success: value('Higher Education Institution', name, selectedGroup, 'Success Rate', selectedYear) })).filter(item => item.access !== undefined && item.retention !== undefined && item.success !== undefined);
+			const states = [...new Set(rows.map(item => item.state))].sort((a, b) => a.localeCompare(b));
+			const stateRows = states.map(state => {
+				const members = rows.filter(item => item.state === state);
+				return { state, count: members.length, access: mean(members.map(item => item.access)), retention: mean(members.map(item => item.retention)), success: mean(members.map(item => item.success)) };
+			});
+			const left = 180, colWidth = 180, top = 54, rowHeight = 39, svg = svgBase(850, top + stateRows.length * rowHeight + 24);
+			let html = '';
+			[['access', `Access · ${selectedYear}`], ['retention', `Retention · ${selectedYear}`], ['success', `Success · ${selectedYear}`]].forEach(([metric, label], column) => { html += text(left + column * colWidth + colWidth / 2, 25, label, 'axis-label'); });
+			stateRows.forEach((row, index) => {
+				const cy = top + index * rowHeight;
+				html += text(left - 14, cy + 24, `${row.state} · ${row.count}`, '', 'end');
+				['access', 'retention', 'success'].forEach((metric, column) => {
+					const rate = row[metric], x = left + column * colWidth + 6, width = 145 * rate / 100;
+					html += `<rect x="${x}" y="${cy + 7}" width="${width}" height="23" fill="${stateColors[row.state] || palette.gray}" opacity=".78"><title>${row.state} provider mean ${metric}: ${rate.toFixed(1)}%</title></rect>`;
+					html += text(x + width + 8, cy + 23, `${rate.toFixed(1)}%`, 'value-label', 'start');
+				});
+			});
+			svg.innerHTML = html;
+			document.getElementById('chartViewport').classList.add('scroll-chart');
+			setLegend([{ label: 'Bars show state averages' }]);
+			setChartMeta('Look for a place, not a winner', `${prettyGroup(selectedGroup)} provider averages grouped by state`, 'Each row aggregates providers in that state; Multi and Multi-State are combined into Multi-state. No individual university is singled out.');
+			setInsight('Make an informed choice', 'State averages are a starting point', 'A broader state-level view can help you find useful questions to ask. It is not a rating of every university in that state.', String(rows.length), 'providers summarized');
+		}
+
+		function mean(numbers) { return numbers.length ? numbers.reduce((total, number) => total + number, 0) / numbers.length : 0; }
+
+		function drawHeatmap() {
+			if (!selectedUniversity) {
+				const svg = svgBase(850, 280);
+				svg.innerHTML = text(425, 132, 'Choose a university to compare its outcomes', 'axis-label');
+				setLegend([]);
+				setChartMeta('Your comparison starts here', 'Choose one university and equity group above', 'No provider is preselected or highlighted. This is the first point in the story where the comparison becomes university-specific.');
+				setInsight('Your choice', 'Compare five groups across four measures', 'Select a university to compare Low-SES, First Nations, Disability, Regional/Remote and Non-English Speaking Background with the all-domestic benchmark. Unreported measures remain n/a.', '5 + 1', 'equity groups + domestic benchmark');
+				return;
+			}
+			const rowGroups = [...allGroups, 'All Domestic'];
+			const labels = [...allGroups.map(prettyGroup), 'All domestic · benchmark'];
+			const left = 205, colWidth = 153, top = 72, rowHeight = 52, width = 850, height = top + rowGroups.length * rowHeight + 25;
+			const svg = svgBase(width, height);
+			let html = '';
+			const comparisonColumns = metricColumns.map(([metric, , label]) => [metric, selectedYear, label]);
+			comparisonColumns.forEach(([metric, year, label], column) => { html += text(left + column * colWidth + colWidth / 2, 35, label, 'axis-label'); html += text(left + column * colWidth + colWidth / 2, 52, String(year)); });
+			rowGroups.forEach((group, row) => {
+				const cy = top + row * rowHeight;
+				const selected = group === selectedGroup;
+				if (selected) html += `<rect x="0" y="${cy}" width="${left + colWidth * 4}" height="${rowHeight}" fill="#edf2eb"/>`;
+				html += text(left - 12, cy + 31, labels[row], '', 'end', selected ? 'font-weight="700" fill="#202622"' : '');
+				comparisonColumns.forEach(([metric, year], column) => {
+					const rate = value('Higher Education Institution', selectedUniversity, group, metric, year);
+					const national = value('National', nationalRegion, group, metric, year);
+					const difference = rate !== undefined && national !== undefined ? rate - national : undefined;
+					const fill = difference === undefined ? '#f0f0eb' : difference >= 0 ? tint('#4b8565', Math.min(Math.abs(difference) / 10, 1)) : tint('#d96b52', Math.min(Math.abs(difference) / 10, 1));
+					const x = left + column * colWidth + 5;
+					html += `<rect class="heat-cell" x="${x}" y="${cy + 4}" width="${colWidth - 10}" height="${rowHeight - 8}" rx="1" fill="${fill}" stroke="white"><title>${escapeHtml(selectedUniversity)} · ${escapeHtml(group)} · ${escapeHtml(metric)} ${year}: ${rate === undefined ? 'not available' : `${rate.toFixed(1)}%, ${difference >= 0 ? '+' : ''}${difference.toFixed(1)} points vs national`}</title></rect>`;
+					if (rate === undefined) html += text(x + (colWidth - 10) / 2, cy + 30, 'n/a');
+					else {
+						const foreground = Math.abs(difference) > 6 ? 'white' : palette.ink;
+						html += text(x + (colWidth - 10) / 2, cy + 25, `${rate.toFixed(1)}%`, 'value-label', 'middle', `fill="${foreground}"`);
+						html += text(x + (colWidth - 10) / 2, cy + 41, `${difference >= 0 ? '+' : ''}${difference.toFixed(1)} vs nat.`, '', 'middle', `fill="${foreground}" font-size="9"`);
+					}
+				});
+			});
+			svg.innerHTML = html;
+			document.getElementById('chartViewport').classList.remove('scroll-chart');
+			setLegend([{ label: 'Above national', tone: 'green' }, { label: 'Below national', tone: 'coral' }]);
+			setChartMeta('Performance depends on the measure', `${selectedUniversity} · ${selectedYear} · rates compared with the same group nationally`, 'Hover a cell for the underlying rate and national difference. Missing values are shown as n/a.');
+			const access = value('Higher Education Institution', selectedUniversity, selectedGroup, 'Access Rate', selectedYear);
+			const nationalAccess = value('National', nationalRegion, selectedGroup, 'Access Rate', selectedYear);
+			const gap = access !== undefined && nationalAccess !== undefined ? access - nationalAccess : undefined;
+			setInsight('University profile', selectedUniversity, `Compare ${prettyGroup(selectedGroup)} outcomes with the same group’s national rates. The heatmap keeps access, attainment, retention and success in view together.`, gap === undefined ? 'n/a' : `${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pts`, `access vs national · ${prettyGroup(selectedGroup)}`);
+		}
+
+		function tint(hex, amount) {
+			const base = [255, 255, 255];
+			const source = hex.match(/[\da-f]{2}/gi).map(value => parseInt(value, 16));
+			const rgb = source.map((channel, index) => Math.round(base[index] + (channel - base[index]) * (.18 + amount * .72)));
+			return `rgb(${rgb.join(',')})`;
+		}
+
+		function render() {
+			const chapter = currentChapters()[step];
+			document.querySelector('.analysis-grid').classList.toggle('wide-chart', chapter.kind === 'outcomes');
+			document.getElementById('chapterList').innerHTML = currentChapters().map((item, index) => `<button class="story-step" data-step="${index}" aria-current="${index === step ? 'step' : 'false'}"><span class="step-num">${String(index + 1).padStart(2, '0')}</span><span class="step-name">${escapeHtml(item.title)}</span></button>`).join('');
+			document.getElementById('storyKicker').textContent = chapter.kicker;
+			document.getElementById('storyTitle').textContent = chapter.title;
+			controlMarkup();
+			document.getElementById('chartViewport').classList.remove('scroll-chart');
+			if (chapter.kind === 'access') drawAccess();
+			if (chapter.kind === 'retention') drawRetention();
+			if (chapter.kind === 'ranking') drawRanking();
+			if (chapter.kind === 'scatter') drawScatter();
+			if (chapter.kind === 'groupAccess') drawGroupAccess();
+			if (chapter.kind === 'groupRetention') drawGroupRetention();
+			if (chapter.kind === 'outcomes') drawOutcomes();
+			if (chapter.kind === 'providerOverview') drawProviderOverview();
+			if (chapter.kind === 'profile') drawHeatmap();
+			chartTooltip.hidden = true;
+			promoteChartTitles();
+		}
+
+		document.getElementById('storyNav').addEventListener('click', event => {
+			const button = event.target.closest('[data-step]');
+			if (!button || !records.length) return;
+			step = Number(button.dataset.step);
+			render();
+		});
+		function showError(message) {
+			document.getElementById('dataState').textContent = 'Data unavailable';
+			document.getElementById('chartViewport').innerHTML = `<div class="error">${escapeHtml(message)} Check that <strong>unidata.csv</strong> is next to this page. When opening the page directly, some browsers block local data access; start a local web server and reload.</div>`;
+		}
+		fetch('./unidata.csv').then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.text(); }).then(setData).catch(error => showError(`Could not load unidata.csv (${error.message}).`));
+	</script>
+</body>
+</html>
