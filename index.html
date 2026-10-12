@@ -45,6 +45,8 @@
 		.story-layout { display: grid; grid-template-columns: 194px minmax(0, 1fr); gap: 22px; align-items: start; }
 		.story-nav { padding: 12px 0; border-top: 2px solid var(--ink); }
 		.story-nav, .chapter-list { min-width: 0; max-width: 100%; }
+		.chapter-scroller { position: relative; }
+		.chapter-more { display: none; }
 		.nav-label { margin: 0 0 11px; color: var(--muted); font: 12px var(--mono); text-transform: uppercase; }
 		.story-step { width: 100%; display: grid; grid-template-columns: 28px 1fr; gap: 9px; align-items: start; padding: 12px 9px; border: 0; border-left: 2px solid transparent; background: transparent; text-align: left; cursor: pointer; }
 		.story-step:hover { background: #eae9e2; }
@@ -71,17 +73,21 @@
 		.legend-dot.square { border-radius: 2px; }
 		.legend-dot.coral { background: var(--coral); }
 		.legend-dot.gray { background: #969e98; }
+		.legend-dot.green { background: var(--green); }
 		.chart-viewport { min-width: 0; width: 100%; overflow: auto hidden; }
 		.chart-tooltip { position: fixed; z-index: 20; max-width: min(340px, calc(100vw - 24px)); padding: 10px 12px; border: 1px solid #ffffff26; border-radius: 3px; background: #202622; color: #fffefa; box-shadow: 0 4px 14px #20262230; font-size: 14px; font-weight: 500; line-height: 1.45; pointer-events: none; }
 		.chart-tooltip[hidden] { display: none; }
 		#chart [data-tooltip]:focus { outline: none; filter: drop-shadow(0 0 2px #202622); }
-		#chart { display: block; width: 100%; min-width: 580px; height: auto; overflow: visible; }
+		#chart { display: block; width: 100%; height: auto; overflow: visible; }
 		#chart text { font-family: var(--sans); fill: var(--muted); font-size: 12px; }
 		#chart .axis { stroke: #cfd2cb; stroke-width: 1; }
 		#chart .grid { stroke: #e8e9e2; stroke-width: 1; }
 		#chart .axis-label { fill: var(--ink); font-size: 12px; }
 		#chart .value-label { fill: var(--ink); font-size: 14px; font-weight: 700; }
 		#chart .annotation { fill: var(--coral); font-size: 12px; font-weight: 700; }
+		#chart .halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+		#chart .end-label { fill: var(--ink); font-size: 12px; font-weight: 600; }
+		#chart .end-label tspan.end-value { fill: var(--muted); font-weight: 500; }
 		.chart-note { min-height: 29px; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 		.insight-panel { display: flex; flex-direction: column; padding: 18px; background: #e8eee8; border-top: 3px solid var(--green); }
 		.insight-label { color: var(--green); font: 500 12px var(--mono); text-transform: uppercase; }
@@ -107,8 +113,7 @@
 		.methodology-list p { margin: 0 0 11px; color: var(--muted); font-size: 13px; line-height: 1.6; }
 		.error { padding: 18px; border: 1px solid var(--coral); background: var(--coral-soft); color: #702f25; font-size: 13px; line-height: 1.5; }
 		.scroll-chart { max-height: 610px; overflow: auto; }
-		.scroll-chart #chart { min-width: 650px; }
-		.plot-point { cursor: default; }
+				.plot-point { cursor: default; }
 		.plot-point:hover { stroke: var(--ink); stroke-width: 3; }
 		.heat-cell { cursor: default; }
 		.heat-cell:hover { stroke: var(--ink); stroke-width: 2; }
@@ -121,18 +126,27 @@
 			.nav-label { display: none; }
 			.story-step { min-height: 60px; border-left: 0; border-bottom: 2px solid transparent; }
 			.story-step[aria-current="step"] { border-bottom-color: var(--blue); }
+			.chapter-list { scrollbar-width: none; }
+			.chapter-list::-webkit-scrollbar { display: none; }
+			.chapter-more { position: absolute; top: 0; bottom: 2px; z-index: 2; width: 44px; display: flex; align-items: center; padding: 0; border: 0; cursor: pointer; color: var(--blue); font: 600 26px/1 var(--sans); }
+			.chapter-more[hidden] { display: none; }
+			.chapter-more.next { right: 0; justify-content: flex-end; padding-right: 2px; background: linear-gradient(to right, #f4f2ec00, var(--paper) 55%); }
+			.chapter-more.prev { left: 0; justify-content: flex-start; padding-left: 2px; background: linear-gradient(to left, #f4f2ec00, var(--paper) 55%); }
+			.chapter-more span { display: grid; place-items: center; width: 26px; height: 26px; padding-bottom: 3px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px #20262233; }
 			.data-footer, .methodology { margin-left: 0; }
 		}
 		@media (max-width: 720px) {
-			.masthead { padding: 15px 16px; }
-			.mast-meta { gap: 10px; font-size: 10px; }
+			.masthead { padding: 15px 16px; flex-wrap: wrap; gap: 8px 16px; }
+			.mast-meta { gap: 4px 10px; font-size: 10px; flex-wrap: wrap; }
 			main { padding: 26px 16px; }
 			.intro { grid-template-columns: 1fr; gap: 12px; margin-bottom: 23px; }
 			.intro-copy { max-width: 500px; }
 			.scope-note { flex-direction: column; gap: 3px; font-size: 14px; }
 			.chapter-list { grid-auto-columns: 118px; }
 			.story-head { align-items: start; flex-direction: column; gap: 12px; }
-			.story-controls { justify-content: start; }
+			.story-controls { justify-content: start; width: 100%; }
+			.chart-topline { flex-direction: column; gap: 10px; }
+			.chart-legend { gap: 6px 12px; }
 			.analysis-grid { grid-template-columns: 1fr; }
 			.chart-panel { padding: 14px 12px 10px; }
 			.insight-panel { min-height: 168px; }
@@ -142,6 +156,8 @@
 			.methodology-head { align-items: start; flex-direction: column; gap: 7px; }
 			.methodology-grid { grid-template-columns: 1fr; gap: 18px; }
 			select { max-width: 72vw; }
+			.control-wrap { max-width: 100%; }
+			.control-wrap select { min-width: 0; flex: 1 1 auto; }
 		}
 		@media (prefers-reduced-motion: no-preference) {
 			.chart-panel, .insight-panel { animation: enter .35s ease-out both; }
@@ -162,7 +178,11 @@
 		<section class="story-layout" aria-label="Interactive data story">
 			<nav class="story-nav" aria-label="Story chapters" id="storyNav">
 				<p class="nav-label">Follow the evidence</p>
-				<div class="chapter-list" id="chapterList"></div>
+				<div class="chapter-scroller">
+					<button class="chapter-more prev" id="chapterPrev" type="button" aria-label="Previous chapters" hidden><span aria-hidden="true">‹</span></button>
+					<div class="chapter-list" id="chapterList"></div>
+					<button class="chapter-more next" id="chapterNext" type="button" aria-label="More chapters" hidden><span aria-hidden="true">›</span></button>
+				</div>
 			</nav>
 			<div class="workspace">
 				<div class="story-head">
@@ -249,6 +269,15 @@
 		let selectedUniversity = '';
 		let selectedYear = null;
 		let selectedState = 'All states';
+		// Charts are drawn at the panel's real pixel width when it is narrow, so text stays legible on phones.
+		let compact = false;
+		let chartW = 900;
+		const compactNames = { 'Low SES by SA1': 'Low-SES', 'First Nations': 'First Nations', Disability: 'Disability', 'Regional/Remote': 'Regional/remote', 'Non-English Speaking Background': 'Non-English', 'All Domestic': 'All domestic' };
+		function measureChart() {
+			const width = document.getElementById('chartViewport').clientWidth;
+			compact = width > 0 && width < 700;
+			chartW = compact ? Math.max(300, Math.round(width)) : 900;
+		}
 
 		function parseCsv(text) {
 			const rows = [];
@@ -411,11 +440,27 @@
 			else if (group === 'Regional/Remote') mark = `<polygon points="${x},${y - 4.5} ${x + 4.5},${y} ${x},${y + 4.5} ${x - 4.5},${y}" fill="${color}"/>`;
 			else if (group === 'Non-English Speaking Background') mark = `<path d="M${x - 3.5},${y - 3.5} L${x + 3.5},${y + 3.5} M${x + 3.5},${y - 3.5} L${x - 3.5},${y + 3.5}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
 			else mark = `<circle cx="${x}" cy="${y}" r="3.8" fill="${color}"/>`;
-			return `<g tabindex="0" aria-label="${escapeHtml(label)}"><title>${escapeHtml(label)}</title>${mark}</g>`;
+			return `<g tabindex="0" aria-label="${escapeHtml(label)}"><title>${escapeHtml(label)}</title><circle cx="${x}" cy="${y}" r="10" fill="transparent"/>${mark}</g>`;
+		}
+		// Direct labels at the end of each line: name + latest value, nudged apart so close series never overlap.
+		function endLabels(items, labelX, minY, maxY) {
+			// Compact charts stack the value under a shorter name to save width.
+			const gap = compact ? 27 : 15;
+			const bottom = compact ? maxY - 13 : maxY;
+			const placed = items.map(item => ({ ...item, labelY: item.y })).sort((a, b) => a.y - b.y);
+			placed.forEach((item, index) => { if (index) item.labelY = Math.max(item.labelY, placed[index - 1].labelY + gap); });
+			const overflow = placed.length ? placed[placed.length - 1].labelY - bottom : 0;
+			if (overflow > 0) placed.forEach(item => { item.labelY -= overflow; });
+			for (let index = placed.length - 2; index >= 0; index--) placed[index].labelY = Math.min(placed[index].labelY, placed[index + 1].labelY - gap);
+			if (placed.length && placed[0].labelY < minY) { const shift = minY - placed[0].labelY; placed.forEach(item => { item.labelY += shift; }); }
+			return placed.map(item => `<path d="M${(item.x + 7).toFixed(1)},${item.y.toFixed(1)} C${(labelX - 10).toFixed(1)},${item.y.toFixed(1)} ${(labelX - 14).toFixed(1)},${item.labelY.toFixed(1)} ${(labelX - 4).toFixed(1)},${item.labelY.toFixed(1)}" fill="none" stroke="${item.color}" stroke-width="1.5" stroke-dasharray="${item.dash || ''}"/>`
+				+ (compact
+					? `<text x="${labelX}" y="${(item.labelY + 4).toFixed(1)}" text-anchor="start" class="end-label" style="font-size:11px">${escapeHtml(item.short || item.label)}<tspan class="end-value" x="${labelX}" dy="13">${escapeHtml(item.value)}</tspan></text>`
+					: `<text x="${labelX}" y="${(item.labelY + 4).toFixed(1)}" text-anchor="start" class="end-label">${escapeHtml(item.label)} <tspan class="end-value">${escapeHtml(item.value)}</tspan></text>`)).join('');
 		}
 		function emptyChart(message) {
-			const svg = svgBase(900, 250);
-			svg.innerHTML = text(450, 125, message, 'axis-label');
+			const svg = svgBase(chartW, 250);
+			svg.innerHTML = text(chartW / 2, 125, message, 'axis-label');
 			setLegend([]);
 			setChartMeta('No comparable observations', message, 'Choose a group with reported data for this measure.');
 			setInsight('Data coverage', 'This comparison is not reported', message, 'n/a', 'no matching records');
@@ -519,23 +564,29 @@
 		function drawRanking() {
 			const year = selectedYear;
 			const rows = filteredInstitutions().map(name => ({ name, group: value('Higher Education Institution', name, selectedGroup, 'Retention Rate', year), all: value('Higher Education Institution', name, 'All Domestic', 'Retention Rate', year) })).filter(item => item.group !== undefined && item.all !== undefined).sort((a, b) => a.group - b.group);
-			const width = 900, height = Math.max(390, 95 + rows.length * 25), left = 275, right = 835, top = 25, rowHeight = 25;
+			const rowHeight = compact ? 40 : 25, left = compact ? 10 : 275, right = compact ? chartW - 14 : 835, top = compact ? 34 : 25;
+			const width = chartW, height = compact ? top + rows.length * rowHeight + 10 : Math.max(390, 95 + rows.length * 25);
 			const svg = svgBase(width, height);
 			const min = 50, max = 100, x = rate => left + (rate - min) / (max - min) * (right - left);
 			let html = '';
-			[50, 60, 70, 80, 90, 100].forEach(tick => { html += line(x(tick), top, x(tick), top + rows.length * rowHeight, 'grid'); html += text(x(tick), 15, `${tick}%`); });
+			[50, 60, 70, 80, 90, 100].forEach(tick => { html += line(x(tick), top, x(tick), top + rows.length * rowHeight, 'grid'); html += text(x(tick), 15, `${tick}%`, '', compact && tick === 50 ? 'start' : compact && tick === 100 ? 'end' : 'middle'); });
 			const national = selectedState === 'All states' ? value('National', nationalRegion, selectedGroup, 'Retention Rate', year) : undefined;
-			if (national !== undefined) { html += line(x(national), top, x(national), top + rows.length * rowHeight, 'axis', 'stroke-dasharray="4 4"'); html += text(x(national) + 5, 27, `National ${national.toFixed(1)}%`, 'annotation', 'start'); }
+			if (national !== undefined) {
+				const flip = compact && x(national) > chartW - 110;
+				html += line(x(national), top, x(national), top + rows.length * rowHeight, 'axis', 'stroke-dasharray="4 4"');
+				html += text(x(national) + (flip ? -5 : 5), compact ? 29 : 27, `National ${national.toFixed(1)}%`, 'annotation halo', flip ? 'end' : 'start');
+			}
 			rows.forEach((item, index) => {
-				const cy = top + index * rowHeight + 15;
+				const cy = top + index * rowHeight + (compact ? 28 : 15);
 				const start = Math.min(item.group, item.all);
-				html += text(left - 13, cy + 4, shortName(item.name), '', 'end', `font-size="11"`);
+				if (compact) html += text(left, cy - 12, shortName(item.name), 'halo', 'start', `font-size="11" fill="#202622"`);
+				else html += text(left - 13, cy + 4, shortName(item.name), '', 'end', `font-size="11"`);
 				html += line(x(start), cy, x(Math.max(item.group, item.all)), cy, 'axis', 'stroke-width="2"');
 				html += `<circle class="plot-point" cx="${x(item.all)}" cy="${cy}" r="4" fill="${palette.gray}"><title>${escapeHtml(item.name)} · all domestic: ${item.all.toFixed(1)}%</title></circle>`;
 				html += `<circle class="plot-point" cx="${x(item.group)}" cy="${cy}" r="5" fill="${palette.blue}"><title>${escapeHtml(item.name)} · ${escapeHtml(prettyGroup(selectedGroup))}: ${item.group.toFixed(1)}%</title></circle>`;
 			});
 			svg.innerHTML = html;
-			document.getElementById('chartViewport').classList.add('scroll-chart');
+			if (!compact) document.getElementById('chartViewport').classList.add('scroll-chart');
 			setLegend([{ label: prettyGroup(selectedGroup) }, { label: 'All domestic students', tone: 'gray' }]);
 			setChartMeta(`${rows.length} universities · ${selectedState} · ${year}`, `${prettyGroup(selectedGroup)} retention rate compared with all domestic students at each provider`, `Providers are sorted by group retention within ${selectedState}. ${selectedState === 'All states' ? 'The national reference is shown.' : 'The national reference is omitted because it is not state-specific.'} No provider is selected or emphasized.`);
 			const spread = rows.length ? `${(rows[rows.length - 1].group - rows[0].group).toFixed(1)} pts` : 'No data';
@@ -548,8 +599,8 @@
 
 		function drawScatter() {
 			const rows = filteredInstitutions().map(name => ({ name, state: institutionStates.get(name) || 'Multi-state', access: value('Higher Education Institution', name, selectedGroup, 'Access Rate', selectedYear), retention: value('Higher Education Institution', name, selectedGroup, 'Retention Rate', selectedYear) })).filter(item => item.access !== undefined && item.retention !== undefined);
-			const svg = svgBase(900, 440);
-			const bounds = { left: 78, right: 820, top: 32, bottom: 350 };
+			const svg = svgBase(chartW, compact ? 380 : 440);
+			const bounds = compact ? { left: 58, right: chartW - 14, top: 16, bottom: 318 } : { left: 78, right: 820, top: 32, bottom: 350 };
 			const x = rate => bounds.left + rate / 30 * (bounds.right - bounds.left);
 			const y = rate => bounds.bottom - (rate - 50) / 50 * (bounds.bottom - bounds.top);
 			let html = '';
@@ -566,8 +617,9 @@
 				const color = stateColors[item.state] || palette.gray;
 				html += `<circle class="plot-point" cx="${x(item.access)}" cy="${y(item.retention)}" r="5" fill="${color}" fill-opacity=".9" stroke="white" stroke-width="1.5"><title>${escapeHtml(item.name)} · ${escapeHtml(item.state)} · ${prettyGroup(selectedGroup)} access ${item.access.toFixed(1)}% · retention ${item.retention.toFixed(1)}%</title></circle>`;
 			});
-			html += text((bounds.left + bounds.right) / 2, 412, `Access rate · ${selectedYear}`, 'axis-label');
-			html += `<text x="18" y="${(bounds.top + bounds.bottom) / 2}" class="axis-label" text-anchor="middle" transform="rotate(-90 18 ${(bounds.top + bounds.bottom) / 2})">Retention rate · ${selectedYear}</text>`;
+			const yLabelX = compact ? 12 : 18;
+			html += text((bounds.left + bounds.right) / 2, bounds.bottom + 54, `Access rate · ${selectedYear}`, 'axis-label');
+			html += `<text x="${yLabelX}" y="${(bounds.top + bounds.bottom) / 2}" class="axis-label" text-anchor="middle" transform="rotate(-90 ${yLabelX} ${(bounds.top + bounds.bottom) / 2})">Retention rate · ${selectedYear}</text>`;
 			svg.innerHTML = html;
 			document.getElementById('chartViewport').classList.remove('scroll-chart');
 			const states = [...new Set(rows.map(item => item.state))].sort((a, b) => a.localeCompare(b));
@@ -578,22 +630,26 @@
 
 		function drawGroupAccess() {
 			const comparable = allGroups.filter(group => yearsWith(group, 'Access Rate', 'National', nationalRegion).includes(2024));
-			const svg = svgBase(900, 400);
-			const bounds = { left: 72, right: 820, top: 34, bottom: 322 };
+			const svg = svgBase(chartW, compact ? 360 : 400);
+			const bounds = compact ? { left: 46, right: chartW - 104, top: 20, bottom: 300 } : { left: 72, right: 690, top: 34, bottom: 322 };
 			const x = year => bounds.left + (year - 2011) / 13 * (bounds.right - bounds.left);
 			const y = rate => bounds.bottom - rate / 35 * (bounds.bottom - bounds.top);
 			let html = '';
 			[0, 10, 20, 30].forEach(tick => { html += line(bounds.left, y(tick), bounds.right, y(tick)); html += text(bounds.left - 12, y(tick) + 4, `${tick}%`, '', 'end'); });
 			html += line(bounds.left, bounds.top, bounds.left, bounds.bottom, 'axis') + line(bounds.left, bounds.bottom, bounds.right, bounds.bottom, 'axis');
+			const ends = [];
 			comparable.forEach((group, index) => {
 				const data = yearsWith(group, 'Access Rate', 'National', nationalRegion).map(year => [year, value('National', nationalRegion, group, 'Access Rate', year)]);
 				const points = data.map(([year, rate]) => [x(year), y(rate)]);
 				const color = groupColors[group];
 				html += `<path d="${pathFrom(points)}" fill="none" stroke="${color}" stroke-width="2.5" stroke-dasharray="${groupDash(group)}" stroke-linecap="round" stroke-linejoin="round"/>`;
 				points.forEach(([px, py], pointIndex) => { const [year, rate] = data[pointIndex]; html += groupMarker(px, py, group, color, `${prettyGroup(group)}, ${year}: ${rate.toFixed(1)}%`); });
+				const [lastX, lastY] = points[points.length - 1];
+				ends.push({ x: lastX, y: lastY, color, dash: groupDash(group), label: prettyGroup(group), short: compactNames[group], value: `${data[data.length - 1][1].toFixed(1)}%` });
 			});
-			[2011, 2013, 2015, 2017, 2019, 2021, 2023, 2024].forEach(year => { html += text(x(year), bounds.bottom + 22, String(year)); });
-			html += text((bounds.left + bounds.right) / 2, 376, 'Year', 'axis-label');
+			html += endLabels(ends, bounds.right + (compact ? 14 : 22), bounds.top, bounds.bottom);
+			(compact ? [2011, 2015, 2019, 2024] : [2011, 2013, 2015, 2017, 2019, 2021, 2023, 2024]).forEach(year => { html += text(x(year), bounds.bottom + 22, String(year)); });
+			html += text((bounds.left + bounds.right) / 2, bounds.bottom + 54, 'Year', 'axis-label');
 			svg.innerHTML = html;
 			setLegend(comparable.map(group => ({ label: prettyGroup(group), color: groupColors[group] })));
 			setChartMeta('Different groups, different starting points', 'Share of commencing domestic students · Australia · 2011–2024', `All ${comparable.length} requested groups have access data. The source does not report an all-domestic access benchmark.`);
@@ -602,26 +658,31 @@
 
 		function drawGroupRetention() {
 			const available = allGroups.filter(group => yearsWith(group, 'Retention Rate', 'National', nationalRegion).length > 0);
-			const svg = svgBase(900, 420);
-			const bounds = { left: 72, right: 820, top: 34, bottom: 340 };
+			const svg = svgBase(chartW, compact ? 380 : 420);
+			const bounds = compact ? { left: 46, right: chartW - 104, top: 20, bottom: 316 } : { left: 72, right: 690, top: 34, bottom: 340 };
 			const x = year => bounds.left + (year - 2011) / 12 * (bounds.right - bounds.left);
 			const y = rate => bounds.bottom - (rate - 45) / 55 * (bounds.bottom - bounds.top);
 			let html = '';
 			[50, 60, 70, 80, 90, 100].forEach(tick => { html += line(bounds.left, y(tick), bounds.right, y(tick)); html += text(bounds.left - 12, y(tick) + 4, `${tick}%`, '', 'end'); });
 			html += line(bounds.left, bounds.top, bounds.left, bounds.bottom, 'axis') + line(bounds.left, bounds.bottom, bounds.right, bounds.bottom, 'axis');
+			const ends = [];
 			available.forEach(group => {
 				const data = yearsWith(group, 'Retention Rate', 'National', nationalRegion).map(year => [year, value('National', nationalRegion, group, 'Retention Rate', year)]);
 				const points = data.map(([year, rate]) => [x(year), y(rate)]);
 				const color = groupColors[group];
 				html += `<path d="${pathFrom(points)}" fill="none" stroke="${color}" stroke-width="2.4" stroke-dasharray="${groupDash(group)}" stroke-linecap="round" stroke-linejoin="round"/>`;
 				points.forEach(([px, py], pointIndex) => { const [year, rate] = data[pointIndex]; html += groupMarker(px, py, group, color, `${prettyGroup(group)}, ${year}: ${rate.toFixed(1)}%`); });
+				const [lastX, lastY] = points[points.length - 1];
+				ends.push({ x: lastX, y: lastY, color, dash: groupDash(group), label: prettyGroup(group), short: compactNames[group], value: `${data[data.length - 1][1].toFixed(1)}%` });
 			});
 			const domestic = yearsWith('All Domestic', 'Retention Rate', 'National', nationalRegion).map(year => [year, value('National', nationalRegion, 'All Domestic', 'Retention Rate', year)]);
 			const domesticPoints = domestic.map(([year, rate]) => [x(year), y(rate)]);
 			html += `<path d="${pathFrom(domesticPoints)}" fill="none" stroke="${palette.ink}" stroke-width="2.5" stroke-dasharray="7 5" stroke-linecap="round"/>`;
 			domesticPoints.forEach(([px, py], pointIndex) => { const [year, rate] = domestic[pointIndex]; html += `<circle cx="${px}" cy="${py}" r="2.5" fill="${palette.ink}"><title>All domestic, ${year}: ${rate.toFixed(1)}%</title></circle>`; });
-			[2011, 2013, 2015, 2017, 2019, 2021, 2023].forEach(year => { html += text(x(year), bounds.bottom + 22, String(year)); });
-			html += text((bounds.left + bounds.right) / 2, 393, 'Year', 'axis-label');
+			if (domestic.length) { const [lastX, lastY] = domesticPoints[domesticPoints.length - 1]; ends.push({ x: lastX, y: lastY, color: palette.ink, dash: '7 5', label: 'All domestic', value: `${domestic[domestic.length - 1][1].toFixed(1)}%` }); }
+			html += endLabels(ends, bounds.right + (compact ? 14 : 22), bounds.top, bounds.bottom);
+			(compact ? [2011, 2015, 2019, 2023] : [2011, 2013, 2015, 2017, 2019, 2021, 2023]).forEach(year => { html += text(x(year), bounds.bottom + 22, String(year)); });
+			html += text((bounds.left + bounds.right) / 2, bounds.bottom + 53, 'Year', 'axis-label');
 			svg.innerHTML = html;
 			setLegend([...allGroups.map(group => ({ label: group === 'Regional/Remote' ? 'Regional / remote · not reported' : prettyGroup(group), color: groupColors[group] })), { label: 'All domestic benchmark', color: palette.ink }]);
 			setChartMeta('The post-enrolment picture is not uniform', 'First-year retention rate · national equity-group trends · 2011–2023', 'All available years are shown. The dashed line is the all-domestic benchmark; Regional/Remote has no reported retention series.');
@@ -631,32 +692,41 @@
 		function drawOutcomes() {
 			const outcomeMetrics = [['Access Rate', selectedYear, 'Access'], ['Retention Rate', selectedYear, 'Retention'], ['Success Rate', selectedYear, 'Success']];
 			const shownGroups = allGroups.filter(group => outcomeMetrics.some(([metric, year]) => value('National', nationalRegion, group, metric, year) !== undefined));
-			const svg = svgBase(900, 440);
-			const bounds = { left: 85, right: 825, top: 34, bottom: 345 };
+			const panelHeight = 220;
+			const svg = svgBase(chartW, compact ? panelHeight * outcomeMetrics.length + 8 : 440);
+			const bounds = { left: 85, right: 870, top: 34, bottom: 345 };
 			const categoryWidth = (bounds.right - bounds.left) / outcomeMetrics.length;
-			const y = (metric, rate) => metric === 'Access Rate'
-				? bounds.bottom - rate / 30 * (bounds.bottom - bounds.top)
-				: bounds.bottom - (rate - 50) / 50 * (bounds.bottom - bounds.top);
+			// Desktop: three panels side by side, with a gutter so the next panel's tick labels never sit on this panel's last bar.
+			// Compact: the same panels stacked, each full width.
+			const panels = outcomeMetrics.map((_, column) => compact
+				? { xLeft: 44, xRight: chartW - 4, top: column * panelHeight + 48, bottom: column * panelHeight + 203, titleY: column * panelHeight + 24 }
+				: { xLeft: bounds.left + categoryWidth * column, xRight: bounds.left + categoryWidth * (column + 1) - 46, top: bounds.top, bottom: bounds.bottom, titleY: 21 });
 			let html = '';
 			outcomeMetrics.forEach(([metric, year, label], column) => {
-				const xLeft = bounds.left + categoryWidth * column;
-				const xRight = xLeft + categoryWidth;
+				const { xLeft, xRight, top, bottom, titleY } = panels[column];
+				const y = (metric, rate) => metric === 'Access Rate'
+					? bottom - rate / 30 * (bottom - top)
+					: bottom - (rate - 50) / 50 * (bottom - top);
 				const ticks = metric === 'Access Rate' ? [0, 10, 20, 30] : [50, 60, 70, 80, 90, 100];
 				ticks.forEach(tick => { html += line(xLeft, y(metric, tick), xRight, y(metric, tick)); html += text(xLeft - 8, y(metric, tick) + 4, `${tick}%`, '', 'end'); });
-				const cx = bounds.left + categoryWidth * (column + .5);
-				html += text(cx, 21, `${label} · ${year}`, 'axis-label');
-				const groupWidth = Math.min(78, (categoryWidth - 14) / shownGroups.length);
+				const cx = (xLeft + xRight) / 2;
+				html += compact ? text(xLeft, titleY, `${label} · ${year}`, 'axis-label', 'start') : text(cx, titleY, `${label} · ${year}`, 'axis-label');
+				const groupWidth = Math.min(78, (xRight - xLeft - 14) / shownGroups.length);
 				shownGroups.forEach((group, index) => {
 					const rate = value('National', nationalRegion, group, metric, year);
 					const barX = cx - shownGroups.length * groupWidth / 2 + index * groupWidth + 4;
 					if (rate === undefined) {
-						html += text(barX + (groupWidth - 7) / 2, bounds.bottom - 5, 'n/a', '', 'middle', 'font-size="11"');
+						html += text(barX + (groupWidth - 7) / 2, bottom - 5, 'n/a', '', 'middle', 'font-size="11"');
 						return;
 					}
 					const barY = y(metric, rate);
 					const color = groupColors[group];
-					html += `<rect x="${barX}" y="${barY}" width="${groupWidth - 7}" height="${bounds.bottom - barY}" fill="${color}" opacity=".82"><title>${escapeHtml(prettyGroup(group))}: ${rate.toFixed(1)}%</title></rect>`;
-					html += text(barX + (groupWidth - 7) / 2, barY - 7, `${rate.toFixed(1)}%`, 'value-label', 'middle', 'font-size="12"');
+					html += `<rect x="${barX}" y="${barY}" width="${groupWidth - 7}" height="${bottom - barY}" fill="${color}" opacity=".82"><title>${escapeHtml(prettyGroup(group))}: ${rate.toFixed(1)}%</title></rect>`;
+					// Lift the label above any gridline its text would sit on (e.g. 89.2% just under 90%).
+					let labelY = barY - 7;
+					const crossed = ticks.map(tick => y(metric, tick)).find(tickY => tickY > labelY - 13 && tickY < labelY + 4);
+					if (crossed !== undefined) labelY = crossed - 5;
+					html += text(barX + (groupWidth - 7) / 2, labelY, `${rate.toFixed(1)}%`, 'value-label halo', 'middle', 'font-size="12"');
 				});
 			});
 			svg.innerHTML = html;
@@ -673,20 +743,21 @@
 				const members = rows.filter(item => item.state === state);
 				return { state, count: members.length, access: mean(members.map(item => item.access)), retention: mean(members.map(item => item.retention)), success: mean(members.map(item => item.success)) };
 			});
-			const left = 180, colWidth = 180, top = 54, rowHeight = 39, svg = svgBase(850, top + stateRows.length * rowHeight + 24);
+			const left = compact ? 62 : 180, colWidth = compact ? (chartW - left) / 3 : 180, barMax = compact ? colWidth - 52 : 145, top = 54, rowHeight = 39;
+			const svg = svgBase(compact ? chartW : 850, top + stateRows.length * rowHeight + 24);
 			let html = '';
-			[['access', `Access · ${selectedYear}`], ['retention', `Retention · ${selectedYear}`], ['success', `Success · ${selectedYear}`]].forEach(([metric, label], column) => { html += text(left + column * colWidth + colWidth / 2, 25, label, 'axis-label'); });
+			[['access', 'Access'], ['retention', 'Retention'], ['success', 'Success']].forEach(([metric, label], column) => { html += text(left + column * colWidth + colWidth / 2, 25, compact ? label : `${label} · ${selectedYear}`, 'axis-label'); });
 			stateRows.forEach((row, index) => {
 				const cy = top + index * rowHeight;
-				html += text(left - 14, cy + 24, `${row.state} · ${row.count}`, '', 'end');
+				html += text(left - (compact ? 8 : 14), cy + 24, `${compact && row.state === 'Multi-state' ? 'Multi' : row.state} · ${row.count}`, '', 'end');
 				['access', 'retention', 'success'].forEach((metric, column) => {
-					const rate = row[metric], x = left + column * colWidth + 6, width = 145 * rate / 100;
+					const rate = row[metric], x = left + column * colWidth + 6, width = barMax * rate / 100;
 					html += `<rect x="${x}" y="${cy + 7}" width="${width}" height="23" fill="${stateColors[row.state] || palette.gray}" opacity=".78"><title>${row.state} provider mean ${metric}: ${rate.toFixed(1)}%</title></rect>`;
-					html += text(x + width + 8, cy + 23, `${rate.toFixed(1)}%`, 'value-label', 'start');
+					html += text(x + width + (compact ? 5 : 8), cy + 23, `${rate.toFixed(1)}%`, 'value-label', 'start', compact ? 'font-size="12"' : '');
 				});
 			});
 			svg.innerHTML = html;
-			document.getElementById('chartViewport').classList.add('scroll-chart');
+			if (!compact) document.getElementById('chartViewport').classList.add('scroll-chart');
 			setLegend([{ label: 'Bars show state averages' }]);
 			setChartMeta('Look for a place, not a winner', `${prettyGroup(selectedGroup)} provider averages grouped by state`, 'Each row aggregates providers in that state; Multi and Multi-State are combined into Multi-state. No individual university is singled out.');
 			setInsight('Make an informed choice', 'State averages are a starting point', 'A broader state-level view can help you find useful questions to ask. It is not a rating of every university in that state.', String(rows.length), 'providers summarized');
@@ -696,54 +767,68 @@
 
 		function drawHeatmap() {
 			if (!selectedUniversity) {
-				const svg = svgBase(850, 280);
-				svg.innerHTML = text(425, 132, 'Choose a university to compare its outcomes', 'axis-label');
+				const width = compact ? chartW : 850;
+				const svg = svgBase(width, 280);
+				svg.innerHTML = text(width / 2, 132, compact ? 'Choose a university above' : 'Choose a university to compare its outcomes', 'axis-label');
 				setLegend([]);
 				setChartMeta('Your comparison starts here', 'Choose one university and equity group above', 'No provider is preselected or highlighted. This is the first point in the story where the comparison becomes university-specific.');
 				setInsight('Your choice', 'Compare five groups across four measures', 'Select a university to compare Low-SES, First Nations, Disability, Regional/Remote and Non-English Speaking Background with the all-domestic benchmark. Unreported measures remain n/a.', '5 + 1', 'equity groups + domestic benchmark');
 				return;
 			}
 			const rowGroups = [...allGroups, 'All Domestic'];
-			const labels = [...allGroups.map(prettyGroup), 'All domestic · benchmark'];
-			const left = 205, colWidth = 153, top = 72, rowHeight = 52, width = 850, height = top + rowGroups.length * rowHeight + 25;
+			const labels = compact ? rowGroups.map(group => compactNames[group]) : [...allGroups.map(prettyGroup), 'All domestic · benchmark'];
+			const left = compact ? 94 : 205, width = compact ? chartW : 850, colWidth = compact ? (width - left) / 4 : 153, top = 72, rowHeight = compact ? 46 : 52, height = top + rowGroups.length * rowHeight + 25;
 			const svg = svgBase(width, height);
 			let html = '';
 			const comparisonColumns = metricColumns.map(([metric, , label]) => [metric, selectedYear, label]);
-			comparisonColumns.forEach(([metric, year, label], column) => { html += text(left + column * colWidth + colWidth / 2, 35, label, 'axis-label'); html += text(left + column * colWidth + colWidth / 2, 52, String(year)); });
+			comparisonColumns.forEach(([metric, year, label], column) => { html += text(left + column * colWidth + colWidth / 2, 35, compact && label === 'Attainment' ? 'Attain.' : label, 'axis-label', 'middle', compact ? 'style="font-size:11px"' : ''); html += text(left + column * colWidth + colWidth / 2, 52, String(year)); });
 			rowGroups.forEach((group, row) => {
 				const cy = top + row * rowHeight;
 				const selected = group === selectedGroup;
 				if (selected) html += `<rect x="0" y="${cy}" width="${left + colWidth * 4}" height="${rowHeight}" fill="#edf2eb"/>`;
-				html += text(left - 12, cy + 31, labels[row], '', 'end', selected ? 'font-weight="700" fill="#202622"' : '');
+				html += text(left - (compact ? 8 : 12), cy + rowHeight / 2 + 5, labels[row], '', 'end', `${selected ? 'font-weight="700" fill="#202622"' : ''} ${compact ? 'style="font-size:11px"' : ''}`);
 				comparisonColumns.forEach(([metric, year], column) => {
 					const rate = value('Higher Education Institution', selectedUniversity, group, metric, year);
 					const national = value('National', nationalRegion, group, metric, year);
 					const difference = rate !== undefined && national !== undefined ? rate - national : undefined;
 					const fill = difference === undefined ? '#f0f0eb' : difference >= 0 ? tint('#4b8565', Math.min(Math.abs(difference) / 10, 1)) : tint('#d96b52', Math.min(Math.abs(difference) / 10, 1));
-					const x = left + column * colWidth + 5;
-					html += `<rect class="heat-cell" x="${x}" y="${cy + 4}" width="${colWidth - 10}" height="${rowHeight - 8}" rx="1" fill="${fill}" stroke="white"><title>${escapeHtml(selectedUniversity)} · ${escapeHtml(group)} · ${escapeHtml(metric)} ${year}: ${rate === undefined ? 'not available' : `${rate.toFixed(1)}%, ${difference >= 0 ? '+' : ''}${difference.toFixed(1)} points vs national`}</title></rect>`;
-					if (rate === undefined) html += text(x + (colWidth - 10) / 2, cy + 30, 'n/a');
+					const inset = compact ? 2 : 5;
+					const x = left + column * colWidth + inset;
+					html += `<rect class="heat-cell" x="${x}" y="${cy + 4}" width="${colWidth - inset * 2}" height="${rowHeight - 8}" rx="1" fill="${fill}" stroke="white"><title>${escapeHtml(selectedUniversity)} · ${escapeHtml(group)} · ${escapeHtml(metric)} ${year}: ${rate === undefined ? 'not available' : `${rate.toFixed(1)}%, ${difference >= 0 ? '+' : ''}${difference.toFixed(1)} points vs national`}</title></rect>`;
+					const cellX = x + (colWidth - inset * 2) / 2;
+					if (rate === undefined) html += text(cellX, cy + rowHeight / 2 + 4, 'n/a');
 					else {
-						const foreground = Math.abs(difference) > 6 ? 'white' : palette.ink;
-						html += text(x + (colWidth - 10) / 2, cy + 25, `${rate.toFixed(1)}%`, 'value-label', 'middle', `fill="${foreground}"`);
-						html += text(x + (colWidth - 10) / 2, cy + 41, `${difference >= 0 ? '+' : ''}${difference.toFixed(1)} vs nat.`, '', 'middle', `fill="${foreground}" font-size="11"`);
+						// Inline style so the stylesheet's muted text colour can't override it.
+						const foreground = readableOn(fill);
+						html += text(cellX, cy + (compact ? 22 : 25), `${rate.toFixed(1)}%`, 'value-label', 'middle', `style="fill:${foreground}${compact ? ';font-size:13px' : ''}"`);
+						html += text(cellX, cy + (compact ? 37 : 41), `${difference >= 0 ? '+' : ''}${difference.toFixed(1)}${compact ? '' : ' vs nat.'}`, '', 'middle', `style="fill:${foreground};font-size:11px;font-weight:500"`);
 					}
 				});
 			});
 			svg.innerHTML = html;
 			document.getElementById('chartViewport').classList.remove('scroll-chart');
 			setLegend([{ label: 'Above national', tone: 'green' }, { label: 'Below national', tone: 'coral' }]);
-			setChartMeta('Performance depends on the measure', `${selectedUniversity} · ${selectedYear} · rates compared with the same group nationally`, 'Hover a cell for the underlying rate and national difference. Missing values are shown as n/a.');
+			setChartMeta('Performance depends on the measure', `${selectedUniversity} · ${selectedYear} · rates compared with the same group nationally`, compact ? 'The smaller number in each cell is the point difference from the national rate. Tap a cell for details; missing values are shown as n/a.' : 'Hover a cell for the underlying rate and national difference. Missing values are shown as n/a.');
 			const access = value('Higher Education Institution', selectedUniversity, selectedGroup, 'Access Rate', selectedYear);
 			const nationalAccess = value('National', nationalRegion, selectedGroup, 'Access Rate', selectedYear);
 			const gap = access !== undefined && nationalAccess !== undefined ? access - nationalAccess : undefined;
 			setInsight('University profile', selectedUniversity, `Compare ${prettyGroup(selectedGroup)} outcomes with the same group’s national rates. The heatmap keeps access, attainment, retention and success in view together.`, gap === undefined ? 'n/a' : `${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pts`, `access vs national · ${prettyGroup(selectedGroup)}`);
 		}
 
+		// Ink or white, whichever has the higher WCAG contrast against the cell fill.
+		function readableOn(rgb) {
+			const luminance = channels => {
+				const [r, g, b] = channels.map(channel => { const c = channel / 255; return c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; });
+				return .2126 * r + .7152 * g + .0722 * b;
+			};
+			const background = luminance(rgb.match(/\d+/g).slice(0, 3).map(Number));
+			const ink = luminance(palette.ink.match(/[\da-f]{2}/gi).map(value => parseInt(value, 16)));
+			return (background + .05) / (ink + .05) >= 1.05 / (background + .05) ? palette.ink : '#ffffff';
+		}
 		function tint(hex, amount) {
 			const base = [255, 255, 255];
 			const source = hex.match(/[\da-f]{2}/gi).map(value => parseInt(value, 16));
-			const rgb = source.map((channel, index) => Math.round(base[index] + (channel - base[index]) * (.18 + amount * .72)));
+			const rgb = source.map((channel, index) => Math.round(base[index] + (channel - base[index]) * (.18 + amount * .64)));
 			return `rgb(${rgb.join(',')})`;
 		}
 
@@ -755,6 +840,7 @@
 			document.getElementById('storyTitle').textContent = chapter.title;
 			controlMarkup();
 			document.getElementById('chartViewport').classList.remove('scroll-chart');
+			measureChart();
 			if (chapter.kind === 'access') drawAccess();
 			if (chapter.kind === 'retention') drawRetention();
 			if (chapter.kind === 'ranking') drawRanking();
@@ -766,8 +852,40 @@
 			if (chapter.kind === 'profile') drawHeatmap();
 			chartTooltip.hidden = true;
 			promoteChartTitles();
+			revealCurrentChapter();
+			updateChapterArrows();
 		}
 
+		let resizeTimer;
+		window.addEventListener('resize', () => {
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(() => {
+				if (!records.length) return;
+				const width = document.getElementById('chartViewport').clientWidth;
+				// Redraw when the layout switches mode, or when a compact chart's width changes (e.g. rotating a phone).
+				if ((width < 700) !== compact || (compact && Math.round(width) !== chartW)) render();
+			}, 150);
+		});
+		const chapterList = document.getElementById('chapterList');
+		const chapterPrev = document.getElementById('chapterPrev');
+		const chapterNext = document.getElementById('chapterNext');
+		// Arrows appear only when the chapter tabs overflow, and only on the side with more to see.
+		function updateChapterArrows() {
+			const overflow = chapterList.scrollWidth - chapterList.clientWidth;
+			chapterPrev.hidden = overflow <= 1 || chapterList.scrollLeft <= 4;
+			chapterNext.hidden = overflow <= 1 || chapterList.scrollLeft >= overflow - 4;
+		}
+		function revealCurrentChapter() {
+			const current = chapterList.querySelector('[aria-current="step"]');
+			if (!current || chapterList.scrollWidth <= chapterList.clientWidth) return;
+			const left = current.offsetLeft - chapterList.offsetLeft, right = left + current.offsetWidth;
+			if (left < chapterList.scrollLeft + 44) chapterList.scrollLeft = left - 44;
+			else if (right > chapterList.scrollLeft + chapterList.clientWidth - 44) chapterList.scrollLeft = right - chapterList.clientWidth + 44;
+		}
+		chapterList.addEventListener('scroll', updateChapterArrows, { passive: true });
+		window.addEventListener('resize', updateChapterArrows);
+		chapterPrev.addEventListener('click', () => chapterList.scrollBy({ left: -chapterList.clientWidth * .7, behavior: 'smooth' }));
+		chapterNext.addEventListener('click', () => chapterList.scrollBy({ left: chapterList.clientWidth * .7, behavior: 'smooth' }));
 		document.getElementById('storyNav').addEventListener('click', event => {
 			const button = event.target.closest('[data-step]');
 			if (!button || !records.length) return;
